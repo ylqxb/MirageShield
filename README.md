@@ -445,7 +445,25 @@ docker-compose down
 
 ### 5. 快速开始
 
-#### 方法一：使用Docker（推荐）
+#### 方法一：一键部署（推荐）
+
+**Windows 系统**：
+1. 确保已安装 Python 3.8+ 和 Docker Desktop
+2. 下载项目代码后，在项目根目录双击运行 `deploy_windows.bat`
+3. 脚本会自动检查环境、构建镜像并启动服务
+4. 部署完成后，根据提示访问服务地址
+
+**Linux 系统**：
+1. 确保已安装 Python 3.8+、Docker 和 docker-compose
+2. 下载项目代码后，在项目根目录执行：
+   ```bash
+   chmod +x deploy_linux.sh
+   ./deploy_linux.sh
+   ```
+3. 脚本会自动检查环境、构建镜像并启动服务
+4. 部署完成后，根据提示访问服务地址
+
+#### 方法二：使用Docker
 ```bash
 # 直接运行Docker镜像
 docker run -d --name mirageshield -p 5000:5000 ylqxb/mirageshield:latest
@@ -453,10 +471,10 @@ docker run -d --name mirageshield -p 5000:5000 ylqxb/mirageshield:latest
 # 访问 http://localhost:5000
 ```
 
-#### 方法二：在线Demo
+#### 方法三：在线Demo
 直接访问 [https://ylqxb.github.io/MirageShield](https://ylqxb.github.io/MirageShield) 体验系统功能
 
-#### 方法三：本地安装
+#### 方法四：本地安装
 按照前面的环境准备和系统构建步骤进行安装
 
 ### 故障排除

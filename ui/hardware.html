@@ -982,8 +982,22 @@
     <div class="back-to-top" id="backToTop">↑</div>
     
     <script>
+        // 检查是否在 GitHub Pages 上运行
+        const isGitHubPages = window.location.hostname === 'ylqxb.github.io';
+        
         // 获取设备状态
         function fetchDeviceStatus() {
+            if (isGitHubPages) {
+                // 在 GitHub Pages 上使用模拟数据
+                loadMockDeviceStatus();
+            } else {
+                // 在本地环境使用真实 API
+                fetchRealDeviceStatus();
+            }
+        }
+        
+        // 获取真实设备状态
+        function fetchRealDeviceStatus() {
             // 获取摄像头状态
             fetch('/api/hardware/status/camera')
                 .then(response => response.json())
@@ -1055,6 +1069,59 @@
                 });
         }
         
+        // 加载模拟设备状态
+        function loadMockDeviceStatus() {
+            const mockDevices = {
+                camera: {
+                    status: 'enabled',
+                    last_access: new Date().toISOString(),
+                    last_access_app: 'TestApp.exe',
+                    allowed_apps: ['TestApp.exe', 'CameraApp.exe', 'VideoCall.exe']
+                },
+                microphone: {
+                    status: 'in_use',
+                    last_access: new Date().toISOString(),
+                    last_access_app: 'TestApp.exe',
+                    allowed_apps: ['TestApp.exe', 'VoiceRecorder.exe', 'VideoCall.exe']
+                },
+                speaker: {
+                    status: 'enabled',
+                    last_access: new Date(new Date().getTime() - 3600000).toISOString(),
+                    last_access_app: 'MusicPlayer.exe',
+                    allowed_apps: ['MusicPlayer.exe', 'VideoPlayer.exe', 'TestApp.exe']
+                },
+                storage: {
+                    status: 'enabled',
+                    last_access: new Date(new Date().getTime() - 1800000).toISOString(),
+                    last_access_app: 'FileExplorer.exe',
+                    allowed_apps: ['FileExplorer.exe', 'TestApp.exe', 'DocumentEditor.exe']
+                },
+                network: {
+                    status: 'enabled',
+                    last_access: new Date().toISOString(),
+                    last_access_app: 'System',
+                    allowed_apps: ['System', 'TestApp.exe', 'Browser.exe']
+                },
+                bluetooth: {
+                    status: 'enabled',
+                    last_access: new Date(new Date().getTime() - 7200000).toISOString(),
+                    last_access_app: 'BluetoothManager.exe',
+                    allowed_apps: ['BluetoothManager.exe', 'TestApp.exe']
+                },
+                printer: {
+                    status: 'enabled',
+                    last_access: new Date(new Date().getTime() - 14400000).toISOString(),
+                    last_access_app: 'DocumentEditor.exe',
+                    allowed_apps: ['DocumentEditor.exe', 'TestApp.exe']
+                }
+            };
+            
+            // 更新所有设备状态
+            for (const deviceId in mockDevices) {
+                updateDeviceStatus(deviceId, mockDevices[deviceId]);
+            }
+        }
+        
         // 更新设备状态
         function updateDeviceStatus(deviceId, data) {
             const statusElement = document.getElementById(`${deviceId}-status`);
@@ -1112,6 +1179,17 @@
         
         // 获取硬件访问事件
         function fetchEvents() {
+            if (isGitHubPages) {
+                // 在 GitHub Pages 上使用模拟数据
+                loadMockEvents();
+            } else {
+                // 在本地环境使用真实 API
+                fetchRealEvents();
+            }
+        }
+        
+        // 获取真实硬件访问事件
+        function fetchRealEvents() {
             fetch('/api/hardware/events')
                 .then(response => response.json())
                 .then(events => {
@@ -1163,6 +1241,83 @@
                 });
         }
         
+        // 加载模拟硬件访问事件
+        function loadMockEvents() {
+            const mockEvents = [
+                {
+                    device_name: '摄像头',
+                    app_name: 'TestApp.exe',
+                    status: 'in_use',
+                    action: 'allowed',
+                    timestamp: new Date().toISOString()
+                },
+                {
+                    device_name: '麦克风',
+                    app_name: 'TestApp.exe',
+                    status: 'in_use',
+                    action: 'allowed',
+                    timestamp: new Date(new Date().getTime() - 300000).toISOString()
+                },
+                {
+                    device_name: '网络适配器',
+                    app_name: 'Browser.exe',
+                    status: 'enabled',
+                    action: 'allowed',
+                    timestamp: new Date(new Date().getTime() - 600000).toISOString()
+                },
+                {
+                    device_name: '存储设备',
+                    app_name: 'FileExplorer.exe',
+                    status: 'enabled',
+                    action: 'allowed',
+                    timestamp: new Date(new Date().getTime() - 900000).toISOString()
+                },
+                {
+                    device_name: '扬声器',
+                    app_name: 'MusicPlayer.exe',
+                    status: 'enabled',
+                    action: 'allowed',
+                    timestamp: new Date(new Date().getTime() - 1200000).toISOString()
+                }
+            ];
+            
+            const eventsBody = document.getElementById('events-body');
+            eventsBody.innerHTML = '';
+            
+            mockEvents.forEach(event => {
+                const row = document.createElement('tr');
+                let deviceName = event.device_name;
+                // 翻译设备名
+                if (deviceName === '摄像头') {
+                    deviceName = t('hardware.camera');
+                } else if (deviceName === '麦克风') {
+                    deviceName = t('hardware.microphone');
+                } else if (deviceName === '扬声器') {
+                    deviceName = t('hardware.speaker');
+                } else if (deviceName === '存储设备') {
+                    deviceName = t('hardware.storage');
+                } else if (deviceName === '网络适配器') {
+                    deviceName = t('hardware.network');
+                } else if (deviceName === '蓝牙设备') {
+                    deviceName = t('hardware.bluetooth');
+                } else if (deviceName === '打印机') {
+                    deviceName = t('hardware.printer');
+                }
+                const deviceId = event.device_id || (event.device_name === '摄像头' ? 'camera' : 'microphone');
+                row.innerHTML = `
+                    <td>${new Date(event.timestamp).toLocaleString()}</td>
+                    <td>${deviceName}</td>
+                    <td>${event.app_name}</td>
+                    <td>${event.status === 'in_use' ? t('hardware.status.in_use') : event.status}</td>
+                    <td class="action-${event.action}">${event.action === 'allowed' ? t('hardware.allowed') : t('hardware.blocked')}</td>
+                    <td>
+                        <button onclick="disableHardwareAccess('${deviceId}', '${event.app_name}')" class="refresh-btn" style="padding: 4px 8px; font-size: 12px;">${t('hardware.block_access')}</button>
+                    </td>
+                `;
+                eventsBody.appendChild(row);
+            });
+        }
+        
         // 禁用硬件访问
         function disableHardwareAccess(deviceId, appName) {
             if (confirm(`确定要禁用 ${appName} 对 ${deviceId === 'camera' ? t('hardware.camera') : t('hardware.microphone')} 的访问吗？`)) {
@@ -1191,6 +1346,17 @@
         
         // 获取硬件访问请求
         function fetchRequests() {
+            if (isGitHubPages) {
+                // 在 GitHub Pages 上使用模拟数据
+                loadMockRequests();
+            } else {
+                // 在本地环境使用真实 API
+                fetchRealRequests();
+            }
+        }
+        
+        // 获取真实硬件访问请求
+        function fetchRealRequests() {
             fetch('/api/hardware/requests')
                 .then(response => response.json())
                 .then(requests => {
@@ -1251,6 +1417,91 @@
                     const requestsBody = document.getElementById('requests-body');
                     requestsBody.innerHTML = '<tr><td colspan="6" class="loading">加载失败</td></tr>';
                 });
+        }
+        
+        // 加载模拟硬件访问请求
+        function loadMockRequests() {
+            const mockRequests = [
+                {
+                    id: '1',
+                    device_name: '摄像头',
+                    app_name: 'NewApp.exe',
+                    reason: '需要访问摄像头进行视频通话',
+                    status: 'pending',
+                    timestamp: new Date().toISOString()
+                },
+                {
+                    id: '2',
+                    device_name: '麦克风',
+                    app_name: 'VoiceApp.exe',
+                    reason: '需要访问麦克风进行语音识别',
+                    status: 'pending',
+                    timestamp: new Date(new Date().getTime() - 180000).toISOString()
+                },
+                {
+                    id: '3',
+                    device_name: '存储设备',
+                    app_name: 'DataApp.exe',
+                    reason: '需要访问存储设备保存数据',
+                    status: 'approved',
+                    timestamp: new Date(new Date().getTime() - 360000).toISOString()
+                },
+                {
+                    id: '4',
+                    device_name: '网络适配器',
+                    app_name: 'NetworkApp.exe',
+                    reason: '需要访问网络进行数据传输',
+                    status: 'denied',
+                    timestamp: new Date(new Date().getTime() - 540000).toISOString()
+                }
+            ];
+            
+            const requestsBody = document.getElementById('requests-body');
+            requestsBody.innerHTML = '';
+            
+            mockRequests.forEach(req => {
+                const row = document.createElement('tr');
+                let statusText = req.status;
+                if (req.status === 'pending') statusText = t('hardware.status.pending');
+                if (req.status === 'approved') statusText = t('hardware.status.approved');
+                if (req.status === 'denied') statusText = t('hardware.status.denied');
+                
+                // 翻译设备名
+                let deviceName = req.device_name;
+                if (deviceName === '摄像头') {
+                    deviceName = t('hardware.camera');
+                } else if (deviceName === '麦克风') {
+                    deviceName = t('hardware.microphone');
+                } else if (deviceName === '扬声器') {
+                    deviceName = t('hardware.speaker');
+                } else if (deviceName === '存储设备') {
+                    deviceName = t('hardware.storage');
+                } else if (deviceName === '网络适配器') {
+                    deviceName = t('hardware.network');
+                } else if (deviceName === '蓝牙设备') {
+                    deviceName = t('hardware.bluetooth');
+                } else if (deviceName === '打印机') {
+                    deviceName = t('hardware.printer');
+                }
+                
+                let actionButtons = '';
+                if (req.status === 'pending') {
+                    actionButtons = `
+                        <button onclick="approveRequest('${req.id}')" class="refresh-btn" style="padding: 4px 8px; font-size: 12px; margin-right: 5px;">${t('hardware.approve')}</button>
+                        <button onclick="denyRequest('${req.id}')" class="refresh-btn" style="padding: 4px 8px; font-size: 12px; background-color: #d32f2f;">${t('hardware.deny')}</button>
+                    `;
+                }
+                
+                row.innerHTML = `
+                    <td>${new Date(req.timestamp).toLocaleString()}</td>
+                    <td>${deviceName}</td>
+                    <td>${req.app_name}</td>
+                    <td>${req.reason}</td>
+                    <td>${statusText}</td>
+                    <td>${actionButtons}</td>
+                `;
+                requestsBody.appendChild(row);
+            });
         }
         
         // 批准硬件访问请求
@@ -1320,8 +1571,57 @@
             event.target.classList.add('active');
         }
         
+        // 页面加载时初始化
+        window.onload = function() {
+            // 初始化语言
+            initLanguage();
+            // 加载设备状态
+            fetchDeviceStatus();
+            // 加载硬件访问事件
+            fetchEvents();
+            // 加载硬件访问请求
+            fetchRequests();
+            // 加载进程状态
+            fetchProcesses();
+            // 初始化返回置顶按钮
+            initBackToTop();
+        };
+        
+        // 初始化返回置顶按钮
+        function initBackToTop() {
+            const backToTopButton = document.getElementById('backToTop');
+            
+            // 监听滚动事件
+            window.addEventListener('scroll', function() {
+                if (window.pageYOffset > 300) {
+                    backToTopButton.classList.add('visible');
+                } else {
+                    backToTopButton.classList.remove('visible');
+                }
+            });
+            
+            // 点击事件
+            backToTopButton.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+        
         // 获取进程状态
         function fetchProcesses() {
+            if (isGitHubPages) {
+                // 在 GitHub Pages 上使用模拟数据
+                loadMockProcesses();
+            } else {
+                // 在本地环境使用真实 API
+                fetchRealProcesses();
+            }
+        }
+        
+        // 获取真实进程状态
+        function fetchRealProcesses() {
             fetch('/api/hardware/processes')
                 .then(response => response.json())
                 .then(data => {
@@ -1364,6 +1664,48 @@
                     document.getElementById('allowed-process-list').innerHTML = '加载失败';
                     document.getElementById('blocked-process-list').innerHTML = '加载失败';
                 });
+        }
+        
+        // 加载模拟进程状态
+        function loadMockProcesses() {
+            const mockProcesses = {
+                allowed: ['TestApp.exe', 'CameraApp.exe', 'VideoCall.exe', 'VoiceRecorder.exe', 'MusicPlayer.exe', 'FileExplorer.exe', 'Browser.exe', 'DocumentEditor.exe', 'BluetoothManager.exe'],
+                blocked: ['MaliciousApp.exe', 'SuspiciousProcess.exe', 'UnknownApp.exe']
+            };
+            
+            // 更新允许的进程列表
+            const allowedList = document.getElementById('allowed-process-list');
+            allowedList.innerHTML = '';
+            mockProcesses.allowed.forEach(process => {
+                const tag = document.createElement('span');
+                tag.className = 'process-tag allowed';
+                tag.textContent = process;
+                tag.style.cursor = 'pointer';
+                tag.title = '点击禁用此进程';
+                tag.onclick = function() {
+                    if (confirm(`确定要禁用进程 ${process} 吗？`)) {
+                        blockProcessByName(process);
+                    }
+                };
+                allowedList.appendChild(tag);
+            });
+            
+            // 更新禁用的进程列表
+            const blockedList = document.getElementById('blocked-process-list');
+            blockedList.innerHTML = '';
+            mockProcesses.blocked.forEach(process => {
+                const tag = document.createElement('span');
+                tag.className = 'process-tag blocked';
+                tag.textContent = process;
+                tag.style.cursor = 'pointer';
+                tag.title = '点击允许此进程';
+                tag.onclick = function() {
+                    if (confirm(`确定要允许进程 ${process} 吗？`)) {
+                        allowProcessByName(process);
+                    }
+                };
+                blockedList.appendChild(tag);
+            });
         }
         
         // 按名称禁用进程

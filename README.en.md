@@ -412,7 +412,25 @@ The project provides an online demo, no environment installation required:
 
 ### 5. Quick Start
 
-#### Method 1: Using Docker (Recommended)
+#### Method 1: One-click Deployment (Recommended)
+
+**Windows System**:
+1. Ensure Python 3.8+ and Docker Desktop are installed
+2. After downloading the project code, double-click `deploy_windows.bat` in the project root directory
+3. The script will automatically check the environment, build the image, and start the service
+4. After deployment is complete, access the service address according to the prompt
+
+**Linux System**:
+1. Ensure Python 3.8+, Docker, and docker-compose are installed
+2. After downloading the project code, execute in the project root directory:
+   ```bash
+   chmod +x deploy_linux.sh
+   ./deploy_linux.sh
+   ```
+3. The script will automatically check the environment, build the image, and start the service
+4. After deployment is complete, access the service address according to the prompt
+
+#### Method 2: Using Docker
 ```bash
 # Run Docker image directly
 docker run -d --name mirageshield -p 5000:5000 ylqxb/mirageshield:latest
@@ -420,10 +438,10 @@ docker run -d --name mirageshield -p 5000:5000 ylqxb/mirageshield:latest
 # Visit http://localhost:5000
 ```
 
-#### Method 2: Online Demo
+#### Method 3: Online Demo
 Directly visit [https://ylqxb.github.io/MirageShield](https://ylqxb.github.io/MirageShield) to experience the system features
 
-#### Method 3: Local Installation
+#### Method 4: Local Installation
 Follow the environment preparation and system building steps above
 
 ### Troubleshooting
