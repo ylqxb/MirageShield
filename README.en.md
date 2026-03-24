@@ -4,6 +4,15 @@
 
 [English](README.en.md) | [中文](README.md)
 
+© 2026 MirageShield Team. All rights reserved.
+The core technology of this project has applied for a patent (preliminary examination passed). The open-source version is for learning, testing, and non-commercial use only.
+
+🚀 By using this project, you are deemed to have read, understood, and agreed to:
+• Copyright statement and patent protection terms
+• MIT open-source license agreement
+• Project privacy policy
+• Commercial use rules
+
 ## ⚠️ Project Status and Disclaimer
 
 - **Personal Development Project**: This is a personal learning/research project. The author is not responsible for any direct or indirect losses caused by the use of this software. Please fully test before use.
@@ -32,22 +41,6 @@ To help you quickly understand and use MirageShield, we have categorized the doc
 - [07_常见问题FAQ.md](./07_常见问题FAQ.md) - Frequently asked questions
 - [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) - Privacy policy
 - [COMMERCIAL_DRAFT.md](./COMMERCIAL_DRAFT.md) - Commercialization planning draft
-
-© 2026 MirageShield Team. All rights reserved.
-The core technology of this project has applied for a patent (preliminary examination passed). The open-source version is for learning, testing, and non-commercial use only.
-
-🚀 By using this project, you are deemed to have read, understood, and agreed to:
-• Copyright statement and patent protection terms
-• MIT open-source license agreement
-• Project privacy policy
-• Commercial use rules
-
-⚠️ Project Status:
-- This project is developed by an individual with limited time. Accurate update and maintenance timelines cannot be provided.
-- System functionality and bug fixes are only improved in spare time.
-- Currently in the development and improvement stage, with known or unknown bugs, and some functions not fully stable.
-- **Important Note**: The system has not been tested in Linux environment. **Do not blindly use it in Linux environment**.
-- For learning, research, and testing purposes only. Not recommended for direct use in production environments.
 
 ## Quick Navigation
 - [Project Introduction](#project-introduction)
@@ -92,7 +85,7 @@ MirageShield is an AI agent-based active defense system with a layered architect
 ## Core Features
 
 ### 1. AI Agent System
-- **Prober**: Network探测与分析, data collection and secure transmission
+- **Prober**: Network detection and analysis, data collection and secure transmission
 - **Baiter**: Bait deployment and management, generating high-fidelity fake data and honeypots
 - **Watcher**: Network monitoring and threat analysis, advanced anomaly detection and attacker analysis
 
@@ -187,7 +180,7 @@ sudo usermod -aG docker $USER
 #### 1. Code Acquisition
 ```bash
 # Clone the code repository
-git clone https://github.com/yourusername/MirageShield.git
+git clone https://github.com/ylqxb/MirageShield.git
 cd MirageShield
 
 # Create virtual environment

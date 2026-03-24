@@ -4,6 +4,15 @@
 
 [English](README.en.md) | [中文](README.md)
 
+© 2026 MirageShield 团队 版权所有
+本项目核心技术已申请发明专利（初审通过），开源版仅供学习、测试与非商业使用。
+
+🚀 使用本项目即视为您已阅读、理解并同意：
+• 版权声明与专利保护条款
+• MIT 开源许可证约定
+• 项目隐私政策
+• 商业化使用规则
+
 ## ⚠️ 项目状态与免责声明
 
 - **个人开发项目**：本项目为个人学习/研究作品，作者不承担任何因使用本软件导致的直接或间接损失。请在使用前充分测试。
@@ -32,23 +41,6 @@
 - [07_常见问题FAQ.md](./07_常见问题FAQ.md) - 常见问题解答
 - [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) - 隐私政策
 - [COMMERCIAL_DRAFT.md](./COMMERCIAL_DRAFT.md) - 商业化规划草案
-
-© 2026 MirageShield 团队 版权所有
-本项目核心技术已申请发明专利（初审通过），开源版仅供学习、测试与非商业使用。
-
-🚀 使用本项目即视为您已阅读、理解并同意：
-• 版权声明与专利保护条款
-• MIT 开源许可证约定
-• 项目隐私政策
-• 商业化使用规则
-
-⚠️ 项目状态：
-
-- 本项目为个人开发，时间有限，不能提供准确的更新和维护时间
-- 仅在闲暇之余完善系统功能和修复问题
-- 目前处于开发完善阶段，存在已知或未知 Bug，部分功能未完全稳定
-- **重要提示**：系统未在 Linux 环境中测试，**请勿盲目用于 Linux 环境**
-- 仅供学习、研究、测试使用，不建议直接用于生产环境
 
 ## 快速导航
 
@@ -206,7 +198,7 @@ sudo usermod -aG docker $USER
 
 ```bash
 # 克隆代码库
-git clone https://github.com/yourusername/MirageShield.git
+git clone https://github.com/ylqxb/MirageShield.git
 cd MirageShield
 
 # 创建虚拟环境
