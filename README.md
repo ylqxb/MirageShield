@@ -20,6 +20,15 @@
 - **测试环境**：仅在 Windows 11 测试通过，未在 Linux 环境中测试。
 - **维护响应**：作者为个人开发者，响应时间不定，请谅解。
 
+## 🚀 快速体验
+
+**下载最新版本**：https://github.com/ylqxb/MirageShield/releases/latest
+
+- Windows 用户：解压后双击 `deploy_windows.bat`
+- Linux 用户：解压后在终端运行 `bash deploy_linux.sh`
+
+> 首次运行会自动安装依赖，请确保网络畅通。
+
 ## 阅读指南
 
 为了帮助您快速了解和使用 MirageShield，我们将文档分为以下几类，并建议按照以下顺序阅读：

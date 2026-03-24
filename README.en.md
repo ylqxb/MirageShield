@@ -20,6 +20,15 @@ The core technology of this project has applied for a patent (preliminary examin
 - **Testing Environment**: Only tested on Windows 11, not tested in Linux environment.
 - **Maintenance Response**: The author is an individual developer, response time may vary, please understand.
 
+## 🚀 Quick Experience
+
+**Download Latest Version**: https://github.com/ylqxb/MirageShield/releases/latest
+
+- Windows users: After decompression, double-click `deploy_windows.bat`
+- Linux users: After decompression, run `bash deploy_linux.sh` in the terminal
+
+> Dependencies will be automatically installed on first run, please ensure network connectivity.
+
 ## Reading Guide
 
 To help you quickly understand and use MirageShield, we have categorized the documentation as follows, and recommend reading in this order:
