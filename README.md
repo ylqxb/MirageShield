@@ -386,6 +386,7 @@ FLASK_DEBUG=1 python start_server.py
 
 #### 3. 容器化部署
 
+#### 使用Docker命令
 ```bash
 # 构建 Docker 镜像
 docker build -t mirageshield .
@@ -398,6 +399,39 @@ docker run -d --name mirageshield \
   --env-file .env \
   mirageshield
 ```
+
+#### 使用Docker Compose
+```bash
+# 启动服务
+docker-compose up -d
+
+# 查看服务状态
+docker-compose ps
+
+# 停止服务
+docker-compose down
+```
+
+### 4. 在线Demo
+
+项目提供在线Demo，无需安装环境即可体验：
+- **GitHub Pages**: [https://ylqxb.github.io/MirageShield](https://ylqxb.github.io/MirageShield)
+
+### 5. 快速开始
+
+#### 方法一：使用Docker（推荐）
+```bash
+# 直接运行Docker镜像
+docker run -d --name mirageshield -p 5000:5000 ylqxb/mirageshield:latest
+
+# 访问 http://localhost:5000
+```
+
+#### 方法二：在线Demo
+直接访问 [https://ylqxb.github.io/MirageShield](https://ylqxb.github.io/MirageShield) 体验系统功能
+
+#### 方法三：本地安装
+按照前面的环境准备和系统构建步骤进行安装
 
 ### 故障排除
 

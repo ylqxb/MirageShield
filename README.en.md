@@ -351,6 +351,7 @@ FLASK_DEBUG=1 python start_server.py
 
 #### 3. Containerized Deployment
 
+#### Using Docker Command
 ```bash
 # Build Docker image
 docker build -t mirageshield .
@@ -363,6 +364,39 @@ docker run -d --name mirageshield \
   --env-file .env \
   mirageshield
 ```
+
+#### Using Docker Compose
+```bash
+# Start service
+docker-compose up -d
+
+# Check service status
+docker-compose ps
+
+# Stop service
+docker-compose down
+```
+
+### 4. Online Demo
+
+The project provides an online demo, no environment installation required:
+- **GitHub Pages**: [https://ylqxb.github.io/MirageShield](https://ylqxb.github.io/MirageShield)
+
+### 5. Quick Start
+
+#### Method 1: Using Docker (Recommended)
+```bash
+# Run Docker image directly
+docker run -d --name mirageshield -p 5000:5000 ylqxb/mirageshield:latest
+
+# Visit http://localhost:5000
+```
+
+#### Method 2: Online Demo
+Directly visit [https://ylqxb.github.io/MirageShield](https://ylqxb.github.io/MirageShield) to experience the system features
+
+#### Method 3: Local Installation
+Follow the environment preparation and system building steps above
 
 ### Troubleshooting
 

@@ -96,7 +96,6 @@ integrations/
 
 # 开发工具配置
 .devcontainer/
-.github/workflows/
 
 # 代码覆盖率报告
 coverage/
