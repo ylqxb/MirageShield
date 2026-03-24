@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>硬件设备管理 - MirageShield</title>
+    <script src="i18n.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #050a14, #0a192f, #172a45);
+            color: #e6f1ff;
+            line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        /* 确保滚动条美观 */
+        .container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .container::-webkit-scrollbar-track {
+            background: rgba(10, 25, 47, 0.5);
+        }
+        
+        .container::-webkit-scrollbar-thumb {
+            background: rgba(100, 255, 218, 0.5);
+            border-radius: 4px;
+        }
+        
+        .container::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 255, 218, 0.8);
+        }
+        
+        .header {
+            background-color: #1a237e;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+        }
+        
+        .back-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .device-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .device-card h2 {
+            color: #1a237e;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-unknown {
+            background-color: #9e9e9e;
+        }
+        
+        .status-enabled {
+            background-color: #4caf50;
+        }
+        
+        .status-disabled {
+            background-color: #f44336;
+        }
+        
+        .status-in_use {
+            background-color: #ff9800;
+        }
+        
+        .device-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .allowed-apps {
+            margin-top: 15px;
+        }
+        
+        .allowed-apps h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .app-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .app-tag {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .events-section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        .events-section h2 {
+            color: #1a237e;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .event-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .event-table th,
+        .event-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .event-table th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .event-table td {
+            font-size: 14px;
+        }
+        
+        .action-allowed {
+            color: #4caf50;
+            font-weight: 500;
+        }
+        
+        .action-blocked {
+            color: #f44336;
+            font-weight: 500;
+        }
+        
+        .refresh-btn {
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .refresh-btn:hover {
+            background-color: #1565c0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        /* 进程管理样式 */
+        .process-tabs {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            background-color: rgba(44, 62, 80, 0.8);
+            padding: 5px;
+            border-radius: 8px;
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background-color: transparent;
+            color: #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .tab-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .tab-btn.active {
+            background-color: #1976d2;
+            color: white;
+            box-shadow: 0 2px 4px rgba(25, 118, 210, 0.3);
+        }
+        
+        .tab-content {
+            margin: 20px 0;
+            padding: 25px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background-color: rgba(30, 41, 59, 0.8);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .tab-content h3 {
+            margin-top: 0;
+            color: #e2e8f0;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        
+        .process-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        
+        .process-tag {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .process-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .process-tag.allowed {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: #81c784;
+            border: 1px solid #4caf50;
+        }
+        
+        .process-tag.blocked {
+            background-color: rgba(244, 67, 54, 0.2);
+            color: #e57373;
+            border: 1px solid #f44336;
+        }
+        
+        .process-actions {
+            margin-top: 30px;
+            padding: 25px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background-color: rgba(30, 41, 59, 0.8);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .process-actions h3 {
+            margin-top: 0;
+            color: #e2e8f0;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        
+        .action-form {
+            margin: 25px 0;
+            padding: 20px;
+            border: 1px solid #555;
+            border-radius: 6px;
+            background-color: rgba(45, 55, 72, 0.8);
+        }
+        
+        .action-form h4 {
+            margin-top: 0;
+            color: #cbd5e0;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #cbd5e0;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #555;
+            border-radius: 6px;
+            background-color: rgba(45, 55, 72, 1);
+            color: #e2e8f0;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #1976d2;
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+        }
+        
+        .form-group button {
+            margin-right: 12px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 实时更新提示 */
+        .refresh-indicator {
+            position: absolute;
+            top: 10px;
+            right: 120px;
+            color: #1976d2;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .refresh-indicator.active {
+            opacity: 1;
+        }
+        
+        .refresh-spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(25, 118, 210, 0.3);
+            border-top: 2px solid #1976d2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 改善表格样式 */
+        .event-table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .event-table-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .event-table-container::-webkit-scrollbar-track {
+            background: rgba(10, 25, 47, 0.5);
+        }
+        
+        .event-table-container::-webkit-scrollbar-thumb {
+            background: rgba(100, 255, 218, 0.5);
+            border-radius: 4px;
+        }
+        
+        .event-table-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 255, 218, 0.8);
+        }
+        
+        .event-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: rgba(30, 41, 59, 0.8);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .event-table th {
+            background-color: rgba(45, 55, 72, 1);
+            color: #e2e8f0;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #555;
+        }
+        
+        .event-table td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #444;
+            color: #cbd5e0;
+        }
+        
+        .event-table tr:hover {
+            background-color: rgba(45, 55, 72, 0.5);
+        }
+        
+        .event-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* 改善设备卡片样式 */
+        .device-card {
+            background-color: rgba(30, 41, 59, 0.8);
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .device-card h2 {
+            margin-top: 0;
+            color: #e2e8f0;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        
+        .device-info {
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #444;
+        }
+        
+        .info-label {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        
+        .info-value {
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+        
+        .allowed-apps h3 {
+            color: #cbd5e0;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .app-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .app-tag {
+            padding: 6px 12px;
+            border-radius: 16px;
+            background-color: rgba(25, 118, 210, 0.2);
+            color: #90caf9;
+            border: 1px solid #1976d2;
+            font-size: 14px;
+        }
+        
+        /* 改善状态指示器 */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-unknown {
+            background-color: #94a3b8;
+        }
+        
+        .status-enabled {
+            background-color: #4caf50;
+        }
+        
+        .status-disabled {
+            background-color: #f44336;
+        }
+        
+        .status-in_use {
+            background-color: #ff9800;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        /* 改善按钮样式 */
+        .refresh-btn {
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            background-color: #1565c0;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 改善事件操作样式 */
+        .action-allowed {
+            color: #4caf50;
+            font-weight: 500;
+        }
+        
+        .action-blocked {
+            color: #f44336;
+            font-weight: 500;
+        }
+        
+        /* 改善加载状态 */
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #94a3b8;
+            font-style: italic;
+        }
+        
+        /* 改善响应式布局 */
+        @media (max-width: 768px) {
+            .process-tabs {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .event-table {
+                font-size: 12px;
+            }
+            
+            .event-table th,
+            .event-table td {
+                padding: 8px 10px;
+            }
+        }
+        
+        /* 返回置顶按钮 */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #007bff, #64ffda);
+            color: #0a192f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(100, 255, 218, 0.4);
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 1000;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(100, 255, 218, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 id="hardware-title">硬件设备管理</h1>
+            <p>MirageShield - 幻象屏障</p>
+            <div class="refresh-indicator">
+                <div class="refresh-spinner"></div>
+                <span id="refresh-text">实时更新中</span>
+            </div>
+            <a href="/ui/index.html" class="back-btn" id="back-button">返回主界面</a>
+        </div>
+        
+        <div class="device-card">
+            <h2 id="camera-title">摄像头</h2>
+            <div class="device-info">
+                <div class="info-item">
+                    <span class="info-label" id="status-label">状态</span>
+                    <span class="info-value" id="camera-status">
+                        <span class="status-indicator status-unknown"></span>
+                        <span id="status-unknown">未知</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" id="last-access-label">上次访问</span>
+                    <span class="info-value" id="camera-last-access">
+                        <span id="never-text">从未</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" id="last-app-label">访问应用</span>
+                    <span class="info-value" id="camera-last-app">
+                        <span id="none-text">无</span>
+                    </span>
+                </div>
+            </div>
+            <div class="allowed-apps">
+                <h3 id="allowed-apps-label">允许访问的应用</h3>
+                <div class="app-list" id="camera-apps"></div>
+            </div>
+        </div>
+        
+        <div class="device-card">
+            <h2 id="mic-title">麦克风</h2>
+            <div class="device-info">
+                <div class="info-item">
+                    <span class="info-label" id="status-label-2">状态</span>
+                    <span class="info-value" id="mic-status">
+                        <span class="status-indicator status-unknown"></span>
+                        <span id="status-unknown-2">未知</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" id="last-access-label-2">上次访问</span>
+                    <span class="info-value" id="mic-last-access">
+                        <span id="never-text-2">从未</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" id="last-app-label-2">访问应用</span>
+                    <span class="info-value" id="mic-last-app">
+                        <span id="none-text-2">无</span>
+                    </span>
+                </div>
+            </div>
+            <div class="allowed-apps">
+                <h3 id="allowed-apps-label-2">允许访问的应用</h3>
+                <div class="app-list" id="mic-apps"></div>
+            </div>
+        </div>
+        
+        <div class="device-card">
+            <h2 id="speaker-title">扬声器</h2>
+            <div class="device-info">
+                <div class="info-item">
+                    <span class="info-label" id="status-label-3">状态</span>
+                    <span class="info-value" id="speaker-status">
+                        <span class="status-indicator status-unknown"></span>
+                        <span id="status-unknown-3">未知</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" id="last-access-label-3">上次访问</span>
+                    <span class="info-value" id="speaker-last-access">
+                        <span id="never-text-3">从未</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" id="last-app-label-3">访问应用</span>
+                    <span class="info-value" id="speaker-last-app">
+                        <span id="none-text-3">无</span>
+                    </span>
+                </div>
+            </div>
+            <div class="allowed-apps">
+                <h3 id="allowed-apps-label-3">允许访问的应用</h3>
+                <div class="app-list" id="speaker-apps"></div>
+            </div>
+        </div>
+        
+        <div class="device-card">
+            <h2 id="storage-title">存储设备</h2>
+            <div class="device-info">
+                <div class="info-item">
+                    <span class="info-label" id="status-label-4">状态</span>
+                    <span class="info-value" id="storage-status">
+                        <span class="status-indicator status-unknown"></span>
+                        <span id="status-unknown-4">未知</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" id="last-access-label-4">上次访问</span>
+                    <span class="info-value" id="storage-last-access">
+                        <span id="never-text-4">从未</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" id="last-app-label-4">访问应用</span>
+                    <span class="info-value" id="storage-last-app">
+                        <span id="none-text-4">无</span>
+                    </span>
+                </div>
+            </div>
+            <div class="allowed-apps">
+                <h3 id="allowed-apps-label-4">允许访问的应用</h3>
+                <div class="app-list" id="storage-apps"></div>
+            </div>
+        </div>
+        
+        <div class="device-card">
+            <h2 id="network-title">网络适配器</h2>
+            <div class="device-info">
+                <div class="info-item">
+                    <span class="info-label" id="status-label-5">状态</span>
+                    <span class="info-value" id="network-status">
+                        <span class="status-indicator status-unknown"></span>
+                        <span id="status-unknown-5">未知</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" id="last-access-label-5">上次访问</span>
+                    <span class="info-value" id="network-last-access">
+                        <span id="never-text-5">从未</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" id="last-app-label-5">访问应用</span>
+                    <span class="info-value" id="network-last-app">
+                        <span id="none-text-5">无</span>
+                    </span>
+                </div>
+            </div>
+            <div class="allowed-apps">
+                <h3 id="allowed-apps-label-5">允许访问的应用</h3>
+                <div class="app-list" id="network-apps"></div>
+            </div>
+        </div>
+        
+        <div class="device-card">
+            <h2 id="bluetooth-title">蓝牙设备</h2>
+            <div class="device-info">
+                <div class="info-item">
+                    <span class="info-label" id="status-label-6">状态</span>
+                    <span class="info-value" id="bluetooth-status">
+                        <span class="status-indicator status-unknown"></span>
+                        <span id="status-unknown-6">未知</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" id="last-access-label-6">上次访问</span>
+                    <span class="info-value" id="bluetooth-last-access">
+                        <span id="never-text-6">从未</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" id="last-app-label-6">访问应用</span>
+                    <span class="info-value" id="bluetooth-last-app">
+                        <span id="none-text-6">无</span>
+                    </span>
+                </div>
+            </div>
+            <div class="allowed-apps">
+                <h3 id="allowed-apps-label-6">允许访问的应用</h3>
+                <div class="app-list" id="bluetooth-apps"></div>
+            </div>
+        </div>
+        
+        <div class="device-card">
+            <h2 id="printer-title">打印机</h2>
+            <div class="device-info">
+                <div class="info-item">
+                    <span class="info-label" id="status-label-7">状态</span>
+                    <span class="info-value" id="printer-status">
+                        <span class="status-indicator status-unknown"></span>
+                        <span id="status-unknown-7">未知</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" id="last-access-label-7">上次访问</span>
+                    <span class="info-value" id="printer-last-access">
+                        <span id="never-text-7">从未</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" id="last-app-label-7">访问应用</span>
+                    <span class="info-value" id="printer-last-app">
+                        <span id="none-text-7">无</span>
+                    </span>
+                </div>
+            </div>
+            <div class="allowed-apps">
+                <h3 id="allowed-apps-label-7">允许访问的应用</h3>
+                <div class="app-list" id="printer-apps"></div>
+            </div>
+        </div>
+        
+        <div class="events-section">
+            <h2 id="events-title">硬件访问事件</h2>
+            <button class="refresh-btn" onclick="fetchEvents()" id="refresh-events-button">刷新事件</button>
+            <div class="event-table-container">
+                <table class="event-table">
+                    <thead>
+                        <tr>
+                            <th id="time-header">时间</th>
+                            <th id="device-header">设备</th>
+                            <th id="app-header">应用</th>
+                            <th id="status-header">状态</th>
+                            <th id="action-header">系统操作</th>
+                            <th id="manual-action-header">手动操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="events-body">
+                        <tr>
+                            <td colspan="6" class="loading" id="loading-text">加载中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="events-section">
+            <h2 id="requests-title">硬件访问请求</h2>
+            <button class="refresh-btn" onclick="fetchRequests()" id="refresh-requests-button">刷新请求</button>
+            <div class="event-table-container">
+                <table class="event-table">
+                    <thead>
+                        <tr>
+                            <th id="time-header-2">时间</th>
+                            <th id="device-header-2">设备</th>
+                            <th id="app-header-2">应用</th>
+                            <th id="reason-header">原因</th>
+                            <th id="status-header-2">状态</th>
+                            <th id="action-header-2">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requests-body">
+                        <tr>
+                            <td colspan="6" class="loading" id="loading-text-2">加载中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="events-section">
+            <h2 id="processes-title">进程管理</h2>
+            <button class="refresh-btn" onclick="fetchProcesses()" id="refresh-processes-button">刷新进程</button>
+            
+            <div class="process-tabs">
+                <button class="tab-btn active" onclick="switchProcessTab('allowed')" id="allowed-processes-tab">允许的进程</button>
+                <button class="tab-btn" onclick="switchProcessTab('blocked')" id="blocked-processes-tab">禁用的进程</button>
+            </div>
+            
+            <div class="tab-content" id="allowed-processes">
+                <h3 id="allowed-processes-title">允许的进程</h3>
+                <div class="process-list" id="allowed-process-list">
+                    <span id="loading-text-3">加载中...</span>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="blocked-processes" style="display: none;">
+                <h3 id="blocked-processes-title">禁用的进程</h3>
+                <div class="process-list" id="blocked-process-list">
+                    <span id="loading-text-4">加载中...</span>
+                </div>
+            </div>
+            
+            <div class="process-actions">
+                <h3 id="process-actions-title">进程操作</h3>
+                <div class="action-form">
+                    <div class="form-group">
+                        <label for="process-name" id="process-name-label">进程名称:</label>
+                        <input type="text" id="process-name" placeholder="例如: TestApp.exe">
+                    </div>
+                    <div class="form-group">
+                        <button class="refresh-btn" onclick="blockProcess()" id="block-process-button">禁用进程</button>
+                        <button class="refresh-btn" onclick="allowProcess()" id="allow-process-button">允许进程</button>
+                    </div>
+                </div>
+                
+                <div class="action-form">
+                    <h4 id="transform-title">变换进程身份</h4>
+                    <div class="form-group">
+                        <label for="transform-process" id="transform-process-label">原进程名称:</label>
+                        <input type="text" id="transform-process" placeholder="例如: TestApp.exe">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-identity" id="new-identity-label">新身份:</label>
+                        <input type="text" id="new-identity" placeholder="例如: SafeApp.exe">
+                    </div>
+                    <div class="form-group">
+                        <button class="refresh-btn" onclick="transformProcess()" id="transform-process-button">变换身份</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 返回置顶按钮 -->
+    <div class="back-to-top" id="backToTop">↑</div>
+    
+    <script>
+        // 获取设备状态
+        function fetchDeviceStatus() {
+            // 获取摄像头状态
+            fetch('/api/hardware/status/camera')
+                .then(response => response.json())
+                .then(data => {
+                    updateDeviceStatus('camera', data);
+                })
+                .catch(error => {
+                    console.error('获取摄像头状态失败:', error);
+                });
+            
+            // 获取麦克风状态
+            fetch('/api/hardware/status/microphone')
+                .then(response => response.json())
+                .then(data => {
+                    updateDeviceStatus('microphone', data);
+                })
+                .catch(error => {
+                    console.error('获取麦克风状态失败:', error);
+                });
+            
+            // 获取扬声器状态
+            fetch('/api/hardware/status/speaker')
+                .then(response => response.json())
+                .then(data => {
+                    updateDeviceStatus('speaker', data);
+                })
+                .catch(error => {
+                    console.error('获取扬声器状态失败:', error);
+                });
+            
+            // 获取存储设备状态
+            fetch('/api/hardware/status/storage')
+                .then(response => response.json())
+                .then(data => {
+                    updateDeviceStatus('storage', data);
+                })
+                .catch(error => {
+                    console.error('获取存储设备状态失败:', error);
+                });
+            
+            // 获取网络适配器状态
+            fetch('/api/hardware/status/network')
+                .then(response => response.json())
+                .then(data => {
+                    updateDeviceStatus('network', data);
+                })
+                .catch(error => {
+                    console.error('获取网络适配器状态失败:', error);
+                });
+            
+            // 获取蓝牙设备状态
+            fetch('/api/hardware/status/bluetooth')
+                .then(response => response.json())
+                .then(data => {
+                    updateDeviceStatus('bluetooth', data);
+                })
+                .catch(error => {
+                    console.error('获取蓝牙设备状态失败:', error);
+                });
+            
+            // 获取打印机状态
+            fetch('/api/hardware/status/printer')
+                .then(response => response.json())
+                .then(data => {
+                    updateDeviceStatus('printer', data);
+                })
+                .catch(error => {
+                    console.error('获取打印机状态失败:', error);
+                });
+        }
+        
+        // 更新设备状态
+        function updateDeviceStatus(deviceId, data) {
+            const statusElement = document.getElementById(`${deviceId}-status`);
+            const lastAccessElement = document.getElementById(`${deviceId}-last-access`);
+            const lastAppElement = document.getElementById(`${deviceId}-last-app`);
+            const appsElement = document.getElementById(`${deviceId}-apps`);
+            
+            // 更新状态
+            const statusMap = {
+                'unknown': { text: t('hardware.status.unknown'), class: 'status-unknown' },
+                'enabled': { text: t('hardware.status.enabled'), class: 'status-enabled' },
+                'disabled': { text: t('hardware.status.disabled'), class: 'status-disabled' },
+                'in_use': { text: t('hardware.status.in_use'), class: 'status-in_use' }
+            };
+            
+            const statusInfo = statusMap[data.status] || statusMap.unknown;
+            if (statusElement) {
+                statusElement.innerHTML = `
+                    <span class="status-indicator ${statusInfo.class}"></span>
+                    ${statusInfo.text}
+                `;
+            }
+            
+            // 更新上次访问
+            if (lastAccessElement) {
+                if (data.last_access) {
+                    lastAccessElement.textContent = new Date(data.last_access).toLocaleString();
+                } else {
+                    lastAccessElement.textContent = t('hardware.never');
+                }
+            }
+            
+            // 更新访问应用
+            if (lastAppElement) {
+                if (data.last_access_app) {
+                    lastAppElement.textContent = data.last_access_app;
+                } else {
+                    lastAppElement.textContent = t('hardware.none');
+                }
+            }
+            
+            // 更新允许的应用
+            if (appsElement) {
+                appsElement.innerHTML = '';
+                if (data.allowed_apps) {
+                    data.allowed_apps.forEach(app => {
+                        const appTag = document.createElement('span');
+                        appTag.className = 'app-tag';
+                        appTag.textContent = app;
+                        appsElement.appendChild(appTag);
+                    });
+                }
+            }
+        }
+        
+        // 获取硬件访问事件
+        function fetchEvents() {
+            fetch('/api/hardware/events')
+                .then(response => response.json())
+                .then(events => {
+                    const eventsBody = document.getElementById('events-body');
+                    eventsBody.innerHTML = '';
+                    
+                    if (events.length === 0) {
+                        eventsBody.innerHTML = `<tr><td colspan="5" class="loading">${t('hardware.no_requests')}</td></tr>`;
+                        return;
+                    }
+                    
+                    events.forEach(event => {
+                        const row = document.createElement('tr');
+                        let deviceName = event.device_name;
+                        // 翻译设备名
+                        if (deviceName === '摄像头') {
+                            deviceName = t('hardware.camera');
+                        } else if (deviceName === '麦克风') {
+                            deviceName = t('hardware.microphone');
+                        } else if (deviceName === '扬声器') {
+                            deviceName = t('hardware.speaker');
+                        } else if (deviceName === '存储设备') {
+                            deviceName = t('hardware.storage');
+                        } else if (deviceName === '网络适配器') {
+                            deviceName = t('hardware.network');
+                        } else if (deviceName === '蓝牙设备') {
+                            deviceName = t('hardware.bluetooth');
+                        } else if (deviceName === '打印机') {
+                            deviceName = t('hardware.printer');
+                        }
+                        const deviceId = event.device_id || (event.device_name === '摄像头' ? 'camera' : 'microphone');
+                        row.innerHTML = `
+                            <td>${new Date(event.timestamp).toLocaleString()}</td>
+                            <td>${deviceName}</td>
+                            <td>${event.app_name}</td>
+                            <td>${event.status === 'in_use' ? t('hardware.status.in_use') : event.status}</td>
+                            <td class="action-${event.action}">${event.action === 'allowed' ? t('hardware.allowed') : t('hardware.blocked')}</td>
+                            <td>
+                                <button onclick="disableHardwareAccess('${deviceId}', '${event.app_name}')" class="refresh-btn" style="padding: 4px 8px; font-size: 12px;">${t('hardware.block_access')}</button>
+                            </td>
+                        `;
+                        eventsBody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('获取事件失败:', error);
+                    const eventsBody = document.getElementById('events-body');
+                    eventsBody.innerHTML = '<tr><td colspan="5" class="loading">加载失败</td></tr>';
+                });
+        }
+        
+        // 禁用硬件访问
+        function disableHardwareAccess(deviceId, appName) {
+            if (confirm(`确定要禁用 ${appName} 对 ${deviceId === 'camera' ? t('hardware.camera') : t('hardware.microphone')} 的访问吗？`)) {
+                fetch(`/api/hardware/disable/${deviceId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ app_name: appName })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(t('hardware.success.block') + data.message);
+                        fetchDeviceStatus();
+                        fetchEvents();
+                    } else {
+                        alert(t('hardware.error.block') + (data.error || t('hardware.error.unknown')));
+                    }
+                })
+                .catch(error => {
+                    alert(t('hardware.error.operation') + error.message);
+                });
+            }
+        }
+        
+        // 获取硬件访问请求
+        function fetchRequests() {
+            fetch('/api/hardware/requests')
+                .then(response => response.json())
+                .then(requests => {
+                    const requestsBody = document.getElementById('requests-body');
+                    requestsBody.innerHTML = '';
+                    
+                    if (requests.length === 0) {
+                        requestsBody.innerHTML = `<tr><td colspan="6" class="loading">${t('hardware.no_requests')}</td></tr>`;
+                        return;
+                    }
+                    
+                    requests.forEach(req => {
+                        const row = document.createElement('tr');
+                        let statusText = req.status;
+                        if (req.status === 'pending') statusText = t('hardware.status.pending');
+                        if (req.status === 'approved') statusText = t('hardware.status.approved');
+                        if (req.status === 'denied') statusText = t('hardware.status.denied');
+                        
+                        // 翻译设备名
+                        let deviceName = req.device_name;
+                        if (deviceName === '摄像头') {
+                            deviceName = t('hardware.camera');
+                        } else if (deviceName === '麦克风') {
+                            deviceName = t('hardware.microphone');
+                        } else if (deviceName === '扬声器') {
+                            deviceName = t('hardware.speaker');
+                        } else if (deviceName === '存储设备') {
+                            deviceName = t('hardware.storage');
+                        } else if (deviceName === '网络适配器') {
+                            deviceName = t('hardware.network');
+                        } else if (deviceName === '蓝牙设备') {
+                            deviceName = t('hardware.bluetooth');
+                        } else if (deviceName === '打印机') {
+                            deviceName = t('hardware.printer');
+                        }
+                        
+                        let actionButtons = '';
+                        if (req.status === 'pending') {
+                            actionButtons = `
+                                <button onclick="approveRequest('${req.id}')" class="refresh-btn" style="padding: 4px 8px; font-size: 12px; margin-right: 5px;">${t('hardware.approve')}</button>
+                                <button onclick="denyRequest('${req.id}')" class="refresh-btn" style="padding: 4px 8px; font-size: 12px; background-color: #d32f2f;">${t('hardware.deny')}</button>
+                            `;
+                        }
+                        
+                        row.innerHTML = `
+                            <td>${new Date(req.timestamp).toLocaleString()}</td>
+                            <td>${deviceName}</td>
+                            <td>${req.app_name}</td>
+                            <td>${req.reason}</td>
+                            <td>${statusText}</td>
+                            <td>${actionButtons}</td>
+                        `;
+                        requestsBody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('获取请求失败:', error);
+                    const requestsBody = document.getElementById('requests-body');
+                    requestsBody.innerHTML = '<tr><td colspan="6" class="loading">加载失败</td></tr>';
+                });
+        }
+        
+        // 批准硬件访问请求
+        function approveRequest(requestId) {
+            if (confirm('确定要批准此硬件访问请求吗？')) {
+                fetch(`/api/hardware/request/${requestId}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(t('hardware.success.approve') + data.message);
+                        fetchRequests();
+                        fetchDeviceStatus();
+                    } else {
+                        alert(t('hardware.error.approve') + (data.error || t('hardware.error.unknown')));
+                    }
+                })
+                .catch(error => {
+                    alert(t('hardware.error.operation') + error.message);
+                });
+            }
+        }
+        
+        // 拒绝硬件访问请求
+        function denyRequest(requestId) {
+            if (confirm('确定要拒绝此硬件访问请求吗？')) {
+                fetch(`/api/hardware/request/${requestId}/deny`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(t('hardware.success.deny') + data.message);
+                        fetchRequests();
+                    } else {
+                        alert(t('hardware.error.deny') + (data.error || t('hardware.error.unknown')));
+                    }
+                })
+                .catch(error => {
+                    alert(t('hardware.error.operation') + error.message);
+                });
+            }
+        }
+        
+        // 切换进程标签页
+        function switchProcessTab(tab) {
+            // 隐藏所有标签内容
+            document.getElementById('allowed-processes').style.display = 'none';
+            document.getElementById('blocked-processes').style.display = 'none';
+            
+            // 移除所有标签按钮的active类
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 显示选中的标签内容
+            document.getElementById(`${tab}-processes`).style.display = 'block';
+            
+            // 添加active类到选中的标签按钮
+            event.target.classList.add('active');
+        }
+        
+        // 获取进程状态
+        function fetchProcesses() {
+            fetch('/api/hardware/processes')
+                .then(response => response.json())
+                .then(data => {
+                    // 更新允许的进程列表
+                    const allowedList = document.getElementById('allowed-process-list');
+                    allowedList.innerHTML = '';
+                    data.allowed.forEach(process => {
+                        const tag = document.createElement('span');
+                        tag.className = 'process-tag allowed';
+                        tag.textContent = process;
+                        tag.style.cursor = 'pointer';
+                        tag.title = '点击禁用此进程';
+                        tag.onclick = function() {
+                            if (confirm(`确定要禁用进程 ${process} 吗？`)) {
+                                blockProcessByName(process);
+                            }
+                        };
+                        allowedList.appendChild(tag);
+                    });
+                    
+                    // 更新禁用的进程列表
+                    const blockedList = document.getElementById('blocked-process-list');
+                    blockedList.innerHTML = '';
+                    data.blocked.forEach(process => {
+                        const tag = document.createElement('span');
+                        tag.className = 'process-tag blocked';
+                        tag.textContent = process;
+                        tag.style.cursor = 'pointer';
+                        tag.title = '点击允许此进程';
+                        tag.onclick = function() {
+                            if (confirm(`确定要允许进程 ${process} 吗？`)) {
+                                allowProcessByName(process);
+                            }
+                        };
+                        blockedList.appendChild(tag);
+                    });
+                })
+                .catch(error => {
+                    console.error('获取进程状态失败:', error);
+                    document.getElementById('allowed-process-list').innerHTML = '加载失败';
+                    document.getElementById('blocked-process-list').innerHTML = '加载失败';
+                });
+        }
+        
+        // 按名称禁用进程
+        function blockProcessByName(processName) {
+            showRefreshIndicator();
+            fetch('/api/hardware/process/block', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ process_name: processName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(t('hardware.success.block') + data.message);
+                    fetchProcesses();
+                    fetchDeviceStatus();
+                } else {
+                    alert(t('hardware.error.block') + (data.error || t('hardware.error.unknown')));
+                }
+                hideRefreshIndicator();
+            })
+            .catch(error => {
+                alert(t('hardware.error.operation') + error.message);
+                hideRefreshIndicator();
+            });
+        }
+        
+        // 按名称允许进程
+        function allowProcessByName(processName) {
+            showRefreshIndicator();
+            fetch('/api/hardware/process/allow', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ process_name: processName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(t('hardware.success.allow') + data.message);
+                    fetchProcesses();
+                    fetchDeviceStatus();
+                } else {
+                    alert(t('hardware.error.allow') + (data.error || t('hardware.error.unknown')));
+                }
+                hideRefreshIndicator();
+            })
+            .catch(error => {
+                alert(t('hardware.error.operation') + error.message);
+                hideRefreshIndicator();
+            });
+        }
+        
+        // 禁用进程
+        function blockProcess() {
+            const processName = document.getElementById('process-name').value;
+            if (!processName) {
+                alert(t('hardware.error.enter_process_name'));
+                return;
+            }
+            
+            if (confirm(`确定要禁用进程 ${processName} 吗？`)) {
+                fetch('/api/hardware/process/block', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ process_name: processName })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(t('hardware.success.block') + data.message);
+                        fetchProcesses();
+                        fetchDeviceStatus();
+                    } else {
+                        alert(t('hardware.error.block') + (data.error || t('hardware.error.unknown')));
+                    }
+                })
+                .catch(error => {
+                    alert(t('hardware.error.operation') + error.message);
+                });
+            }
+        }
+        
+        // 允许进程
+        function allowProcess() {
+            const processName = document.getElementById('process-name').value;
+            if (!processName) {
+                alert(t('hardware.error.enter_process_name'));
+                return;
+            }
+            
+            if (confirm(`确定要允许进程 ${processName} 吗？`)) {
+                fetch('/api/hardware/process/allow', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ process_name: processName })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(t('hardware.success.allow') + data.message);
+                        fetchProcesses();
+                        fetchDeviceStatus();
+                    } else {
+                        alert(t('hardware.error.allow') + (data.error || t('hardware.error.unknown')));
+                    }
+                })
+                .catch(error => {
+                    alert(t('hardware.error.operation') + error.message);
+                });
+            }
+        }
+        
+        // 变换进程身份
+        function transformProcess() {
+            const processName = document.getElementById('transform-process').value;
+            const newIdentity = document.getElementById('new-identity').value;
+            
+            if (!processName || !newIdentity) {
+                alert(t('hardware.error.enter_transform_info'));
+                return;
+            }
+            
+            if (confirm(`确定要将进程 ${processName} 的身份变换为 ${newIdentity} 吗？`)) {
+                fetch('/api/hardware/process/transform', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        process_name: processName, 
+                        new_identity: newIdentity 
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(t('hardware.success.transform') + data.message);
+                        fetchProcesses();
+                    } else {
+                        alert(t('hardware.error.transform') + (data.error || t('hardware.error.unknown')));
+                    }
+                })
+                .catch(error => {
+                    alert(t('hardware.error.operation') + error.message);
+                });
+            }
+        }
+        
+        // 显示实时更新指示器
+        function showRefreshIndicator() {
+            const indicator = document.querySelector('.refresh-indicator');
+            if (indicator) {
+                indicator.classList.add('active');
+            }
+        }
+        
+        // 隐藏实时更新指示器
+        function hideRefreshIndicator() {
+            const indicator = document.querySelector('.refresh-indicator');
+            if (indicator) {
+                setTimeout(() => {
+                    indicator.classList.remove('active');
+                }, 1000);
+            }
+        }
+        
+        // 检查新的访问请求
+        function checkNewRequests() {
+            fetch('/api/hardware/requests?status=pending')
+                .then(response => response.json())
+                .then(requests => {
+                    if (requests.length > 0) {
+                        showRequestNotification(requests.length);
+                    }
+                })
+                .catch(error => {
+                    console.error('检查新请求失败:', error);
+                });
+        }
+        
+        // 显示访问请求通知
+        function showRequestNotification(count) {
+            // 检查是否已经显示了通知
+            if (document.getElementById('request-notification')) {
+                return;
+            }
+            
+            const notification = document.createElement('div');
+            notification.id = 'request-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background-color: #1976d2;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                z-index: 9999; /* 确保在最顶层 */
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                animation: slideIn 0.3s ease;
+                min-width: 300px;
+                border-left: 4px solid #4caf50;
+            `;
+            
+            notification.innerHTML = `
+                <div style="background-color: white; color: #1976d2; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">${count}</div>
+                <div>
+                    <div style="font-weight: bold; font-size: 16px;">新的硬件访问请求</div>
+                    <div style="font-size: 14px; opacity: 0.9;">您有 ${count} 个待处理的访问请求</div>
+                    <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">点击查看详情</div>
+                </div>
+                <button onclick="dismissNotification(this)" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px; font-weight: bold;">×</button>
+            `;
+            
+            // 点击通知跳转到硬件访问请求部分
+            notification.onclick = function(e) {
+                if (!e.target.closest('button')) {
+                    document.getElementById('requests-body').scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+            
+            document.body.appendChild(notification);
+            
+            // 添加桌面通知（如果浏览器支持）
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('MirageShield - 新的硬件访问请求', {
+                    body: `您有 ${count} 个待处理的访问请求`,
+                    icon: '/ui/images/icon.png'
+                });
+            } else if ('Notification' in window && Notification.permission !== 'denied') {
+                Notification.requestPermission();
+            }
+            
+            // 10秒后自动消失
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => {
+                        notification.parentNode.removeChild(notification);
+                    }, 300);
+                }
+            }, 10000);
+        }
+        
+        // 关闭通知
+        function dismissNotification(button) {
+            const notification = button.closest('#request-notification');
+            if (notification) {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    notification.parentNode.removeChild(notification);
+                }, 300);
+            }
+        }
+        
+        // 翻译页面
+        function translatePage() {
+            // 翻译头部
+            document.getElementById('hardware-title').textContent = t('section.hardware');
+            document.getElementById('refresh-text').textContent = t('hardware.real_time_updating');
+            document.getElementById('back-button').textContent = t('hardware.back_to_main');
+            
+            // 翻译摄像头部分
+            document.getElementById('camera-title').textContent = t('hardware.camera');
+            document.getElementById('status-label').textContent = t('hardware.status');
+            document.getElementById('status-unknown').textContent = t('hardware.status.unknown');
+            document.getElementById('last-access-label').textContent = t('hardware.last_access');
+            document.getElementById('never-text').textContent = t('hardware.never');
+            document.getElementById('last-app-label').textContent = t('hardware.last_app');
+            document.getElementById('none-text').textContent = t('hardware.none');
+            document.getElementById('allowed-apps-label').textContent = t('hardware.allowed_apps');
+            
+            // 翻译麦克风部分
+            document.getElementById('mic-title').textContent = t('hardware.microphone');
+            document.getElementById('status-label-2').textContent = t('hardware.status');
+            document.getElementById('status-unknown-2').textContent = t('hardware.status.unknown');
+            document.getElementById('last-access-label-2').textContent = t('hardware.last_access');
+            document.getElementById('never-text-2').textContent = t('hardware.never');
+            document.getElementById('last-app-label-2').textContent = t('hardware.last_app');
+            document.getElementById('none-text-2').textContent = t('hardware.none');
+            document.getElementById('allowed-apps-label-2').textContent = t('hardware.allowed_apps');
+            
+            // 翻译扬声器部分
+            document.getElementById('speaker-title').textContent = t('hardware.speaker');
+            document.getElementById('status-label-3').textContent = t('hardware.status');
+            document.getElementById('status-unknown-3').textContent = t('hardware.status.unknown');
+            document.getElementById('last-access-label-3').textContent = t('hardware.last_access');
+            document.getElementById('never-text-3').textContent = t('hardware.never');
+            document.getElementById('last-app-label-3').textContent = t('hardware.last_app');
+            document.getElementById('none-text-3').textContent = t('hardware.none');
+            document.getElementById('allowed-apps-label-3').textContent = t('hardware.allowed_apps');
+            
+            // 翻译存储设备部分
+            document.getElementById('storage-title').textContent = t('hardware.storage');
+            document.getElementById('status-label-4').textContent = t('hardware.status');
+            document.getElementById('status-unknown-4').textContent = t('hardware.status.unknown');
+            document.getElementById('last-access-label-4').textContent = t('hardware.last_access');
+            document.getElementById('never-text-4').textContent = t('hardware.never');
+            document.getElementById('last-app-label-4').textContent = t('hardware.last_app');
+            document.getElementById('none-text-4').textContent = t('hardware.none');
+            document.getElementById('allowed-apps-label-4').textContent = t('hardware.allowed_apps');
+            
+            // 翻译网络适配器部分
+            document.getElementById('network-title').textContent = t('hardware.network');
+            document.getElementById('status-label-5').textContent = t('hardware.status');
+            document.getElementById('status-unknown-5').textContent = t('hardware.status.unknown');
+            document.getElementById('last-access-label-5').textContent = t('hardware.last_access');
+            document.getElementById('never-text-5').textContent = t('hardware.never');
+            document.getElementById('last-app-label-5').textContent = t('hardware.last_app');
+            document.getElementById('none-text-5').textContent = t('hardware.none');
+            document.getElementById('allowed-apps-label-5').textContent = t('hardware.allowed_apps');
+            
+            // 翻译蓝牙设备部分
+            document.getElementById('bluetooth-title').textContent = t('hardware.bluetooth');
+            document.getElementById('status-label-6').textContent = t('hardware.status');
+            document.getElementById('status-unknown-6').textContent = t('hardware.status.unknown');
+            document.getElementById('last-access-label-6').textContent = t('hardware.last_access');
+            document.getElementById('never-text-6').textContent = t('hardware.never');
+            document.getElementById('last-app-label-6').textContent = t('hardware.last_app');
+            document.getElementById('none-text-6').textContent = t('hardware.none');
+            document.getElementById('allowed-apps-label-6').textContent = t('hardware.allowed_apps');
+            
+            // 翻译打印机部分
+            document.getElementById('printer-title').textContent = t('hardware.printer');
+            document.getElementById('status-label-7').textContent = t('hardware.status');
+            document.getElementById('status-unknown-7').textContent = t('hardware.status.unknown');
+            document.getElementById('last-access-label-7').textContent = t('hardware.last_access');
+            document.getElementById('never-text-7').textContent = t('hardware.never');
+            document.getElementById('last-app-label-7').textContent = t('hardware.last_app');
+            document.getElementById('none-text-7').textContent = t('hardware.none');
+            document.getElementById('allowed-apps-label-7').textContent = t('hardware.allowed_apps');
+            
+            // 翻译硬件访问事件部分
+            document.getElementById('events-title').textContent = t('hardware.events');
+            document.getElementById('refresh-events-button').textContent = t('hardware.refresh_events');
+            document.getElementById('time-header').textContent = t('hardware.time');
+            document.getElementById('device-header').textContent = t('hardware.device');
+            document.getElementById('app-header').textContent = t('hardware.app');
+            document.getElementById('status-header').textContent = t('hardware.status');
+            document.getElementById('action-header').textContent = t('hardware.system_action');
+            document.getElementById('manual-action-header').textContent = t('hardware.manual_action');
+            document.getElementById('loading-text').textContent = t('hardware.loading');
+            
+            // 翻译硬件访问请求部分
+            document.getElementById('requests-title').textContent = t('hardware.requests');
+            document.getElementById('refresh-requests-button').textContent = t('hardware.refresh_requests');
+            document.getElementById('time-header-2').textContent = t('hardware.time');
+            document.getElementById('device-header-2').textContent = t('hardware.device');
+            document.getElementById('app-header-2').textContent = t('hardware.app');
+            document.getElementById('reason-header').textContent = t('hardware.reason');
+            document.getElementById('status-header-2').textContent = t('hardware.status');
+            document.getElementById('action-header-2').textContent = t('hardware.action');
+            document.getElementById('loading-text-2').textContent = t('hardware.loading');
+            
+            // 翻译进程管理部分
+            document.getElementById('processes-title').textContent = t('hardware.processes');
+            document.getElementById('refresh-processes-button').textContent = t('hardware.refresh_processes');
+            document.getElementById('allowed-processes-tab').textContent = t('hardware.allowed_processes');
+            document.getElementById('blocked-processes-tab').textContent = t('hardware.blocked_processes');
+            document.getElementById('allowed-processes-title').textContent = t('hardware.allowed_processes');
+            document.getElementById('blocked-processes-title').textContent = t('hardware.blocked_processes');
+            document.getElementById('loading-text-3').textContent = t('hardware.loading');
+            document.getElementById('loading-text-4').textContent = t('hardware.loading');
+            document.getElementById('process-actions-title').textContent = t('hardware.process_actions');
+            document.getElementById('process-name-label').textContent = t('hardware.process_name');
+            document.getElementById('block-process-button').textContent = t('hardware.block_process');
+            document.getElementById('allow-process-button').textContent = t('hardware.allow_process');
+            document.getElementById('transform-title').textContent = t('hardware.transform_identity');
+            document.getElementById('transform-process-label').textContent = t('hardware.original_process');
+            document.getElementById('new-identity-label').textContent = t('hardware.new_identity');
+            document.getElementById('transform-process-button').textContent = t('hardware.transform');
+            
+            // 翻译输入框占位符
+            document.getElementById('process-name').placeholder = t('hardware.example') + ' TestApp.exe';
+            document.getElementById('transform-process').placeholder = t('hardware.example') + ' TestApp.exe';
+            document.getElementById('new-identity').placeholder = t('hardware.example') + ' SafeApp.exe';
+        }
+        
+        // 初始化
+        function init() {
+            // 翻译页面
+            translatePage();
+            
+            // 首次加载时显示刷新指示器
+            showRefreshIndicator();
+            
+            // 并行加载所有数据
+            Promise.all([
+                fetchDeviceStatus(),
+                fetchEvents(),
+                fetchRequests(),
+                fetchProcesses(),
+                checkNewRequests()
+            ]).then(() => {
+                // 所有数据加载完成后隐藏刷新指示器
+                hideRefreshIndicator();
+            });
+            
+            // 每30秒自动刷新
+            setInterval(() => {
+                showRefreshIndicator();
+                
+                Promise.all([
+                    fetchDeviceStatus(),
+                    fetchEvents(),
+                    fetchRequests(),
+                    fetchProcesses(),
+                    checkNewRequests()
+                ]).then(() => {
+                    hideRefreshIndicator();
+                });
+            }, 30000);
+            
+            // 初始化返回置顶按钮
+            initBackToTop();
+        }
+        
+        // 初始化返回置顶按钮
+        function initBackToTop() {
+            const backToTopButton = document.getElementById('backToTop');
+            
+            // 监听滚动事件
+            window.addEventListener('scroll', function() {
+                if (window.pageYOffset > 300) {
+                    backToTopButton.classList.add('visible');
+                } else {
+                    backToTopButton.classList.remove('visible');
+                }
+            });
+            
+            // 点击事件
+            backToTopButton.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+        
+        // 添加动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // 页面加载完成后初始化
+        window.onload = init;
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+Tue Mar 10 10:56:04 2026    profiles\profile.prof
+
+         287493 function calls (282546 primitive calls) in 127.609 seconds
+
+   Ordered by: cumulative time
+   List reduced from 1500 to 20 due to restriction <20>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    139/1    0.001    0.000  127.609  127.609 {built-in method builtins.exec}
+        1    0.004    0.004  127.609  127.609 profile_performance.py:58(analyze_api_performance)
+       50    0.001    0.000  102.342    2.047 api.py:62(get)
+       50    0.002    0.000  102.341    2.047 api.py:14(request)
+       50    0.002    0.000  102.326    2.047 sessions.py:500(request)
+       50    0.002    0.000  102.249    2.045 sessions.py:673(send)
+       50    0.001    0.000  102.232    2.045 adapters.py:590(send)
+       50    0.001    0.000  102.202    2.044 connectionpool.py:592(urlopen)
+       50    0.002    0.000  102.190    2.044 connectionpool.py:377(_make_request)
+       50    0.001    0.000  102.075    2.041 connection.py:424(request)
+       50    0.000    0.000  102.065    2.041 client.py:1322(endheaders)
+       50    0.000    0.000  102.065    2.041 client.py:1084(_send_output)
+       50    0.001    0.000  102.064    2.041 client.py:1029(send)
+       50    0.000    0.000  102.053    2.041 connection.py:330(connect)
+       50    0.001    0.000  102.053    2.041 connection.py:198(_new_conn)
+       50    0.004    0.000  102.052    2.041 connection.py:27(create_connection)
+      100  102.000    1.020  102.000    1.020 {method 'connect' of '_socket.socket' objects}
+       50   25.025    0.501   25.025    0.501 {built-in method time.sleep}
+       16    0.000    0.000    0.472    0.030 __init__.py:1(<module>)
+    174/2    0.001    0.000    0.208    0.104 <frozen importlib._bootstrap>:1349(_find_and_load)
+
+

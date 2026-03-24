@@ -1,0 +1,53 @@
+{
+  "name": "Baiter",
+  "agent_type": "AI-2",
+  "description": "管理和部署诱饵数据的智能体",
+  "generative_ai": {
+    "enabled": false,
+    "api_url": "https://api.openai.com/v1/chat/completions",
+    "api_key": "your_openai_api_key_here",  # 替换为实际的API密钥
+    "model": "gpt-3.5-turbo",
+    "max_tokens": 1000
+  },
+  "file_watermark": {
+    "enabled": true,
+    "watermark_key": "your_watermark_key_here",  # 替换为实际的水印密钥
+    "watermark_pattern": "[CHIMERA_WATERMARK:{key}]"
+  },
+  "honeytoken": {
+    "enabled": true,
+    "types": [
+      "credit_card",
+      "api_key",
+      "password",
+      "database_credential"
+    ],
+    "generation_strategy": "context_aware"
+  },
+  "decoy_files": {
+    "enabled": true,
+    "types": [
+      "document",
+      "code",
+      "database",
+      "configuration"
+    ],
+    "generation_strategy": "adaptive"
+  },
+  "deployment": {
+    "strategy": "dynamic",
+    "refresh_interval": 3600,
+    "max_decoys": 50
+  },
+  "advanced_deception": {
+    "enabled": true,
+    "behavior_mimicry": true,
+    "context_awareness": true,
+    "anti_analysis": true
+  }
+}
+
+# 配置说明：
+# 1. 复制此文件并重命名为 baiter_config.json
+# 2. 替换所有占位符为实际值
+# 3. 敏感信息建议通过环境变量设置，而非直接写入文件

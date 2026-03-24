@@ -1,0 +1,7 @@
+{
+  "timestamp": "2026-03-10T10:56:04.927999",
+  "profile_duration": 30,
+  "profile_file": "profiles\\profile.prof",
+  "summary_file": "profiles\\profile_summary.txt",
+  "analysis": "请查看生成的性能分析文件以分析性能瓶颈"
+}
