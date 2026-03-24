@@ -12,26 +12,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
-    # 构建Docker镜像
-    - name: Build Docker image
-      run: docker build -t mirageshield .
-    
-    # 登录Docker Hub
-    - name: Login to Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKER_HUB_USERNAME }}
-        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-    
-    # 推送Docker镜像
-    - name: Push Docker image
-      run: |
-        docker tag mirageshield ${{ secrets.DOCKER_HUB_USERNAME }}/mirageshield:latest
-        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/mirageshield:latest
-    
     # 部署到GitHub Pages
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./ui
+        force_orphan: true
