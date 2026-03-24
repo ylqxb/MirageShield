@@ -1,4 +1,8 @@
-# MirageShield - 幻象屏障
+# MirageShield - 幻象屏障 
+
+> 基于 AI 智能体的主动防御系统 | 开源网络安全工具 
+
+[English](README.en.md) | [中文](README.md)
 
 © 2026 MirageShield 团队 版权所有
 本项目核心技术已申请发明专利（初审通过），开源版仅供学习、测试与非商业使用。

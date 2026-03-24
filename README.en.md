@@ -784,3 +784,5 @@ SOFTWARE.
 ### Additional Terms
 
 The core technology of this project has applied for a patent (preliminary examination passed). The open-source version is for learning, testing, and non-commercial use only. Commercial use requires written authorization.
+
+If this project has helped you, welcome to Star ⭐
