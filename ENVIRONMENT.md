@@ -39,6 +39,8 @@
 | OPENAI_API_KEY | OpenAI API 密钥 | 可选 |
 | WATERMARK_KEY | 水印密钥 | 推荐 |
 
+> **注意**：上述外部 API 功能（TOR_CONTROL_PASSWORD、IP_REPUTATION_API_KEY、OPENAI_API_KEY）为预留接口，当前版本可能尚未完全实现，配置后可能不会立即生效。具体支持情况请关注项目更新日志。
+
 ## 自动备份机制
 
 ### 功能说明
