@@ -515,6 +515,9 @@
             });
         }
         
+        // 检查是否在 GitHub Pages 上运行
+        const isGitHubPages = window.location.hostname === 'ylqxb.github.io';
+        
         // 页面加载时获取状态
         window.onload = function() {
             // 初始化语言
@@ -522,10 +525,38 @@
             // 检查认证状态
             checkAuthStatus();
             // 加载日志
-            getLogs();
+            if (isGitHubPages) {
+                // 在 GitHub Pages 上使用模拟数据
+                loadMockLogs();
+            } else {
+                // 在本地环境使用真实 API
+                getLogs();
+            }
             // 初始化返回置顶按钮
             initBackToTop();
         };
+        
+        // 加载模拟日志数据
+        function loadMockLogs() {
+            // 生成模拟日志数据
+            allLogs = [
+                { level: 'INFO', timestamp: new Date().toLocaleString(), module: 'system', message: '系统启动成功' },
+                { level: 'INFO', timestamp: new Date(new Date().getTime() - 60000).toLocaleString(), module: 'agent', message: '智能体初始化完成' },
+                { level: 'WARNING', timestamp: new Date(new Date().getTime() - 120000).toLocaleString(), module: 'network', message: '网络连接不稳定' },
+                { level: 'INFO', timestamp: new Date(new Date().getTime() - 180000).toLocaleString(), module: 'hardware', message: '硬件设备检测完成' },
+                { level: 'ERROR', timestamp: new Date(new Date().getTime() - 240000).toLocaleString(), module: 'api', message: 'API 请求失败' },
+                { level: 'INFO', timestamp: new Date(new Date().getTime() - 300000).toLocaleString(), module: 'defense', message: '防御策略更新成功' },
+                { level: 'WARNING', timestamp: new Date(new Date().getTime() - 360000).toLocaleString(), module: 'agent', message: '智能体响应超时' },
+                { level: 'INFO', timestamp: new Date(new Date().getTime() - 420000).toLocaleString(), module: 'system', message: '系统状态正常' },
+                { level: 'INFO', timestamp: new Date(new Date().getTime() - 480000).toLocaleString(), module: 'network', message: '网络连接恢复正常' },
+                { level: 'INFO', timestamp: new Date(new Date().getTime() - 540000).toLocaleString(), module: 'defense', message: '成功拦截攻击' }
+            ];
+            
+            // 过滤并显示日志
+            filterLogs();
+            // 更新统计信息
+            document.getElementById('total-log-count').textContent = allLogs.length;
+        }
         
         // 检查认证状态
         function checkAuthStatus() {
