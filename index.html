@@ -1235,6 +1235,9 @@
         let token = localStorage.getItem('token');
         let user = JSON.parse(localStorage.getItem('user') || 'null');
         
+        // 检查是否在 GitHub Pages 上运行
+        const isGitHubPages = window.location.hostname === 'ylqxb.github.io';
+        
         // 页面加载时获取状态
         window.onload = function() {
             // 初始化语言
@@ -1247,15 +1250,233 @@
             if (token) {
                 // 延迟1秒再刷新状态，让页面先渲染完成
                 setTimeout(() => {
-                    refreshStatus();
-                    // 自动刷新状态（每30秒）
-                    setInterval(refreshStatus, 30000);
+                    if (isGitHubPages) {
+                        // 在 GitHub Pages 上使用模拟数据
+                        loadMockData();
+                    } else {
+                        // 在本地环境使用真实 API
+                        refreshStatus();
+                        // 自动刷新状态（每30秒）
+                        setInterval(refreshStatus, 30000);
+                    }
                 }, 1000);
+            } else if (isGitHubPages) {
+                // 在 GitHub Pages 上，自动登录为演示用户
+                simulateLogin();
             }
             
             // 初始化返回置顶按钮
             initBackToTop();
         };
+        
+        // 模拟登录
+        function simulateLogin() {
+            // 模拟登录成功
+            token = 'demo-token-123456';
+            user = {
+                username: 'demo',
+                force_password_change: false
+            };
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(user));
+            
+            // 更新UI
+            checkAuthStatus();
+            showToast('登录成功', 'success');
+            
+            // 加载模拟数据
+            loadMockData();
+        }
+        
+        // 加载模拟数据
+        function loadMockData() {
+            // 模拟系统状态
+            const systemStatusDiv = document.getElementById('system-status');
+            systemStatusDiv.innerHTML = `
+                <div class="status-card success">
+                    <div class="card-title">系统状态</div>
+                    <div class="card-content">operational</div>
+                </div>
+                <div class="status-card">
+                    <div class="card-title">最后更新</div>
+                    <div class="card-content">${new Date().toLocaleString()}</div>
+                </div>
+                <div class="status-card">
+                    <div class="card-title">当前策略</div>
+                    <div class="card-content">
+                        诱饵比例: 50.0% | 
+                        路径复杂度: 3 | 
+                        心理战级别: 2
+                    </div>
+                </div>
+                <div class="status-card">
+                    <div class="card-title">当前防护级别</div>
+                    <div class="card-content">标准防护</div>
+                </div>
+            `;
+            
+            // 模拟智能体状态
+            const agentStatusDiv = document.getElementById('agent-status');
+            agentStatusDiv.innerHTML = `
+                <div class="status-card">
+                    <div class="card-title">prober</div>
+                    <div class="card-content">网络探测与分析</div>
+                </div>
+                <div class="status-card">
+                    <div class="card-title">baiter</div>
+                    <div class="card-content">诱饵与欺骗</div>
+                </div>
+                <div class="status-card">
+                    <div class="card-title">watcher</div>
+                    <div class="card-content">威胁监控与分析</div>
+                </div>
+            `;
+            
+            // 模拟网络状态
+            const networkStatusDiv = document.getElementById('network-status');
+            networkStatusDiv.innerHTML = `
+                <div class="status-card success">
+                    <div class="card-title">网络健康分数</div>
+                    <div class="card-content">95.0%</div>
+                </div>
+                <div class="status-card">
+                    <div class="card-title">节点状态</div>
+                    <div class="card-content">
+                        总节点: 10 | 
+                        活跃节点: 8 | 
+                        非活跃节点: 2
+                    </div>
+                </div>
+                <div class="status-card">
+                    <div class="card-title">IP池</div>
+                    <div class="card-content">
+                        可用IP: 254 | 
+                        已用IP: 10
+                    </div>
+                </div>
+            `;
+            
+            // 模拟社区联防状态
+            const communityStatusDiv = document.getElementById('community-status');
+            communityStatusDiv.innerHTML = `
+                <div class="status-card">
+                    <div class="card-title">黑名单</div>
+                    <div class="card-content">
+                        IP数量: 1000 | 
+                        指纹数量: 500
+                    </div>
+                </div>
+                <div class="status-card">
+                    <div class="card-title">最后更新</div>
+                    <div class="card-content">${new Date().toLocaleString()}</div>
+                </div>
+            `;
+            
+            // 模拟威胁评估历史
+            const assessmentHistoryDiv = document.getElementById('assessment-history');
+            assessmentHistoryDiv.innerHTML = `
+                <div class="status-card warning">
+                    <div class="card-title">medium (85.0%)</div>
+                    <div class="card-content">
+                        攻击类型: SQL注入 | 
+                        IP: 192.168.1.100 | 
+                        时间: ${new Date().toLocaleString()}
+                    </div>
+                </div>
+                <div class="status-card success">
+                    <div class="card-title">low (45.0%)</div>
+                    <div class="card-content">
+                        攻击类型: 端口扫描 | 
+                        IP: 192.168.1.101 | 
+                        时间: ${new Date(new Date().getTime() - 3600000).toLocaleString()}
+                    </div>
+                </div>
+            `;
+            
+            // 模拟防护结果
+            const protectionResultDiv = document.getElementById('protection-result');
+            protectionResultDiv.innerHTML = `
+                <div class="status-card success">
+                    <div class="card-title">防护成功率</div>
+                    <div class="card-content">98.5%</div>
+                </div>
+                <div class="status-card">
+                    <div class="card-title">拦截攻击</div>
+                    <div class="card-content">156次</div>
+                </div>
+            `;
+            
+            // 模拟系统监控
+            const monitoringContentDiv = document.getElementById('monitoring-content');
+            monitoringContentDiv.innerHTML = `
+                <div class="status-card">
+                    <div class="card-title">CPU使用率</div>
+                    <div class="card-content">35%</div>
+                </div>
+                <div class="status-card">
+                    <div class="card-title">内存使用率</div>
+                    <div class="card-content">60%</div>
+                </div>
+                <div class="status-card">
+                    <div class="card-title">磁盘使用率</div>
+                    <div class="card-content">45%</div>
+                </div>
+            `;
+            
+            // 模拟硬件状态
+            const hardwareContentDiv = document.getElementById('hardware-content');
+            hardwareContentDiv.innerHTML = `
+                <div class="status-card success">
+                    <div class="card-title">摄像头 (高)</div>
+                    <div class="card-content">
+                        <p>状态: 已启用</p>
+                        <p>最后访问: ${new Date().toLocaleString()}</p>
+                        <p>最后应用: TestApp.exe</p>
+                    </div>
+                </div>
+                <div class="status-card warning">
+                    <div class="card-title">麦克风 (中)</div>
+                    <div class="card-content">
+                        <p>状态: 使用中</p>
+                        <p>最后访问: ${new Date().toLocaleString()}</p>
+                        <p>最后应用: TestApp.exe</p>
+                    </div>
+                </div>
+                <div class="status-card">
+                    <div class="card-title">网络适配器 (高)</div>
+                    <div class="card-content">
+                        <p>状态: 已启用</p>
+                        <p>最后访问: ${new Date().toLocaleString()}</p>
+                        <p>最后应用: System</p>
+                    </div>
+                </div>
+            `;
+            
+            // 模拟局域网管理
+            const lanStatusDiv = document.getElementById('lan-status');
+            lanStatusDiv.innerHTML = `
+                <div class="status-card">
+                    <div class="card-title">局域网节点</div>
+                    <div class="card-content">
+                        总节点: 5 | 
+                        在线节点: 4 | 
+                        离线节点: 1
+                    </div>
+                </div>
+            `;
+            
+            // 模拟数据传输
+            const dataTransferDiv = document.getElementById('data-transfer');
+            dataTransferDiv.innerHTML = `
+                <div class="status-card">
+                    <div class="card-title">数据传输</div>
+                    <div class="card-content">
+                        已发送: 10MB | 
+                        已接收: 5MB
+                    </div>
+                </div>
+            `;
+        }
         
         // 显式设置各部分标题
         function setSectionTitles() {
