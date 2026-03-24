@@ -4,6 +4,35 @@
 
 [English](README.en.md) | [中文](README.md)
 
+## ⚠️ Project Status and Disclaimer
+
+- **Personal Development Project**: This is a personal learning/research project. The author is not responsible for any direct or indirect losses caused by the use of this software. Please fully test before use.
+- **Development Status**: In early development stage, features may be unstable, **not recommended for critical business environments**.
+- **Testing Environment**: Only tested on Windows 11, not tested in Linux environment.
+- **Maintenance Response**: The author is an individual developer, response time may vary, please understand.
+
+## Reading Guide
+
+To help you quickly understand and use MirageShield, we have categorized the documentation as follows, and recommend reading in this order:
+
+### Getting Started
+- [01_快速开始.md](./01_快速开始.md) - Quick deployment and usage guide
+- [README.md](./README.md) - Project overview and core features
+
+### Deployment
+- [02_部署指南.md](./02_部署指南.md) - Detailed deployment steps and configuration
+
+### Development
+- [03_开发指南.md](./03_开发指南.md) - System architecture and development guidelines
+- [04_运维指南.md](./04_运维指南.md) - System maintenance and troubleshooting
+- [06_开发贡献指南.md](./06_开发贡献指南.md) - How to contribute to the project
+
+### Reference
+- [05_用户手册.md](./05_用户手册.md) - System functionality usage instructions
+- [07_常见问题FAQ.md](./07_常见问题FAQ.md) - Frequently asked questions
+- [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) - Privacy policy
+- [COMMERCIAL_DRAFT.md](./COMMERCIAL_DRAFT.md) - Commercialization planning draft
+
 © 2026 MirageShield Team. All rights reserved.
 The core technology of this project has applied for a patent (preliminary examination passed). The open-source version is for learning, testing, and non-commercial use only.
 
@@ -700,7 +729,10 @@ The following environment variables need to be set before running the system:
 - **Honeypot Deployment**: Basic honeypot functionality
 - **Configuration Management**: Flexible configuration system
 
-### Commercial Version Reserved Features (Not implemented in open source version)
+### Commercial Version Reserved Features (Future Planning, Not Implemented)
+
+> The above features are future plans, not yet implemented, and do not represent current version capabilities.
+
 - **Advanced Threat Analysis**: AI model integration
 - **Multi-tenant Management**: Enterprise-level deployment support
 - **Professional Technical Support**: 7x24 technical support
