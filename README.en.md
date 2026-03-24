@@ -1,4 +1,9 @@
 # MirageShield - Phantom Barrier
+
+> AI Agent-based Active Defense System | Open Source Network Security Tool
+
+[English](README.en.md) | [中文](README.md)
+
 © 2026 MirageShield Team. All rights reserved.
 The core technology of this project has applied for a patent (preliminary examination passed). The open-source version is for learning, testing, and non-commercial use only.
 
@@ -24,6 +29,7 @@ The core technology of this project has applied for a patent (preliminary examin
 - [Module Building Guide](#module-building-guide)
 - [Testing and Debugging](#testing-and-debugging)
 - [Deployment Best Practices](#deployment-best-practices)
+- [Quick Start](#quick-start)
 - [Troubleshooting](#troubleshooting)
 - [Performance Optimization](#performance-optimization)
 - [Security Hardening](#security-hardening)
