@@ -584,24 +584,45 @@
                         allLogs = data.logs;
                         filterLogs();
                         // 更新统计信息
-                        document.getElementById('total-log-count').textContent = allLogs.length;
+                        const totalLogCount = document.getElementById('total-log-count');
+                        if (totalLogCount) {
+                            totalLogCount.textContent = allLogs.length;
+                        }
                     } else {
                         allLogs = [];
                         const logsDiv = document.getElementById('logs-content');
-                        logsDiv.innerHTML = `<div class="status-card"><div class="card-title">${t('logs.no_records')}</div><div class="card-content">${t('logs.no_logs_generated')}</div></div>`;
-                        document.getElementById('log-count').textContent = '0';
-                        document.getElementById('total-log-count').textContent = '0';
+                        if (logsDiv) {
+                            logsDiv.innerHTML = `<div class="status-card"><div class="card-title">${t('logs.no_records')}</div><div class="card-content">${t('logs.no_logs_generated')}</div></div>`;
+                        }
+                        const logCount = document.getElementById('log-count');
+                        if (logCount) {
+                            logCount.textContent = '0';
+                        }
+                        const totalLogCount = document.getElementById('total-log-count');
+                        if (totalLogCount) {
+                            totalLogCount.textContent = '0';
+                        }
                     }
                 })
                 .catch(error => {
-                    document.getElementById('logs-content').innerHTML = `<div class="status-card danger"><div class="card-title">${t('logs.loading_failed')}</div><div class="card-content">${t('logs.failed_to_get_logs')}: ${error.message}</div></div>`;
+                    const logsDiv = document.getElementById('logs-content');
+                    if (logsDiv) {
+                        logsDiv.innerHTML = `<div class="status-card danger"><div class="card-title">${t('logs.loading_failed')}</div><div class="card-content">${t('logs.failed_to_get_logs')}: ${error.message}</div></div>`;
+                    }
                 });
         }
         
         // 过滤日志
         function filterLogs() {
-            const levelFilter = document.getElementById('log-level').value;
-            const searchTerm = document.getElementById('log-search').value.toLowerCase();
+            const levelFilterElement = document.getElementById('log-level');
+            const searchTermElement = document.getElementById('log-search');
+            
+            if (!levelFilterElement || !searchTermElement) {
+                return;
+            }
+            
+            const levelFilter = levelFilterElement.value;
+            const searchTerm = searchTermElement.value.toLowerCase();
             
             let filteredLogs = allLogs;
             
@@ -621,28 +642,36 @@
             
             // 显示过滤后的日志
             const logsDiv = document.getElementById('logs-content');
-            if (filteredLogs.length > 0) {
-                let html = '';
-                filteredLogs.forEach(log => {
-                    const levelClass = {
-                        'ERROR': 'danger',
-                        'WARNING': 'warning',
-                        'INFO': 'success'
-                    }[log.level] || '';
-                    html += `
-                        <div class="status-card ${levelClass}">
-                            <div class="card-title">${log.level} - ${log.timestamp}</div>
-                            <div class="card-content">
-                                <strong>${log.module}</strong>: ${log.message}
+            if (logsDiv) {
+                if (filteredLogs.length > 0) {
+                    let html = '';
+                    filteredLogs.forEach(log => {
+                        const levelClass = {
+                            'ERROR': 'danger',
+                            'WARNING': 'warning',
+                            'INFO': 'success'
+                        }[log.level] || '';
+                        html += `
+                            <div class="status-card ${levelClass}">
+                                <div class="card-title">${log.level} - ${log.timestamp}</div>
+                                <div class="card-content">
+                                    <strong>${log.module}</strong>: ${log.message}
+                                </div>
                             </div>
-                        </div>
-                    `;
-                });
-                logsDiv.innerHTML = html;
-                document.getElementById('log-count').textContent = filteredLogs.length;
-            } else {
-                logsDiv.innerHTML = `<div class="status-card"><div class="card-title">${t('logs.no_records')}</div><div class="card-content">${t('logs.no_matching_logs')}</div></div>`;
-                document.getElementById('log-count').textContent = '0';
+                        `;
+                    });
+                    logsDiv.innerHTML = html;
+                    const logCount = document.getElementById('log-count');
+                    if (logCount) {
+                        logCount.textContent = filteredLogs.length;
+                    }
+                } else {
+                    logsDiv.innerHTML = `<div class="status-card"><div class="card-title">${t('logs.no_records')}</div><div class="card-content">${t('logs.no_matching_logs')}</div></div>`;
+                    const logCount = document.getElementById('log-count');
+                    if (logCount) {
+                        logCount.textContent = '0';
+                    }
+                }
             }
         }
         
