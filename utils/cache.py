@@ -63,9 +63,9 @@ def cached(timeout=30):
             kwargs_str = "_".join(f"{k}={v}" for k, v in sorted(kwargs.items()))
             params_str = f"{args_str}:{kwargs_str}"
             
-            # 使用SHA256哈希生成缓存键
+            # 使用SHA256哈希生成缓存键，添加更多上下文信息
             key_hash = hashlib.sha256(params_str.encode('utf-8')).hexdigest()
-            key = f"{func_name}:{key_hash}"
+            key = f"cache:{func_name}:{key_hash}"
             
             # 检查缓存是否有效（加锁）
             now = datetime.now()

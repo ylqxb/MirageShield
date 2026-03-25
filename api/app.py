@@ -23,28 +23,273 @@ from api.logs import logs_bp
 # 导入监控管理蓝图
 from api.monitoring import monitoring_bp
 
+# 输入验证函数
+def validate_input(data, schema):
+    """验证输入数据是否符合schema
+    
+    Args:
+        data: 输入数据
+        schema: 验证规则，格式为 {field: (required, type, max_length, min_value, max_value)}
+            - required: 是否必填
+            - type: 数据类型
+            - max_length: 最大长度（适用于字符串、列表、字典）
+            - min_value: 最小值（适用于数字类型，可选）
+            - max_value: 最大值（适用于数字类型，可选）
+    
+    Returns:
+        (valid, errors): (是否有效, 错误信息列表)
+    """
+    errors = []
+    
+    for field, schema_values in schema.items():
+        # 兼容旧的schema格式
+        if len(schema_values) == 3:
+            required, field_type, max_length = schema_values
+            min_value = None
+            max_value = None
+        else:
+            required, field_type, max_length, min_value, max_value = schema_values
+        
+        value = data.get(field)
+        
+        # 检查是否必填
+        if required and value is None:
+            errors.append(f"{field} 是必填项")
+            continue
+        
+        # 检查类型
+        # 注意：isinstance函数支持元组作为第二个参数，表示检查value是否是元组中任一类型的实例
+        if value is not None and not isinstance(value, field_type):
+            # 构建期望类型的描述
+            if isinstance(field_type, tuple):
+                expected_types = ', '.join(t.__name__ for t in field_type)
+            else:
+                expected_types = field_type.__name__
+            errors.append(f"{field} 类型错误，期望 {expected_types}")
+            continue
+        
+        # 检查长度（包括嵌套结构）
+        if max_length is not None:
+            def get_depth(obj, current_depth=0):
+                if isinstance(obj, (list, dict)):
+                    if current_depth >= max_length:
+                        return current_depth
+                    if isinstance(obj, list):
+                        return max(get_depth(item, current_depth + 1) for item in obj) if obj else current_depth
+                    else:
+                        return max(get_depth(v, current_depth + 1) for v in obj.values()) if obj else current_depth
+                return current_depth
+            
+            depth = get_depth(value)
+            if depth > max_length:
+                errors.append(f"{field} 深度不能超过 {max_length}")
+        
+        # 检查数字范围
+        if value is not None and isinstance(value, (int, float)):
+            if min_value is not None and value < min_value:
+                errors.append(f"{field} 不能小于 {min_value}")
+            if max_value is not None and value > max_value:
+                errors.append(f"{field} 不能大于 {max_value}")
+    
+    return len(errors) == 0, errors
+
+# 重试装饰器
+def retry(max_attempts=3, delay=1, backoff=2, exceptions=(Exception,), timeout=None):
+    """重试装饰器
+    
+    Args:
+        max_attempts: 最大重试次数
+        delay: 初始延迟时间（秒）
+        backoff: 延迟倍数
+        exceptions: 重试的异常类型
+        timeout: 单次调用的最大时间（秒）
+    
+    Returns:
+        装饰后的函数
+    """
+    def decorator(func):
+        import asyncio
+        import concurrent.futures
+        import functools
+        
+        # 检查函数是否为异步函数
+        is_async = asyncio.iscoroutinefunction(func)
+        
+        if is_async:
+            @functools.wraps(func)
+            async def async_wrapper(*args, **kwargs):
+                attempts = 0
+                current_delay = delay
+                while attempts < max_attempts:
+                    try:
+                        if timeout:
+                            # 使用asyncio.wait_for实现超时控制
+                            return await asyncio.wait_for(func(*args, **kwargs), timeout=timeout)
+                        else:
+                            # 无超时控制
+                            return await func(*args, **kwargs)
+                    except exceptions as e:
+                        attempts += 1
+                        if attempts == max_attempts:
+                            logger.error(f"函数 {func.__name__} 重试 {max_attempts} 次后失败: {str(e)}")
+                            raise
+                        logger.warning(f"函数 {func.__name__} 执行失败，{current_delay} 秒后重试: {str(e)}")
+                        await asyncio.sleep(current_delay)
+                        current_delay *= backoff
+            return async_wrapper
+        else:
+            @functools.wraps(func)
+            def sync_wrapper(*args, **kwargs):
+                attempts = 0
+                current_delay = delay
+                while attempts < max_attempts:
+                    try:
+                        if timeout:
+                            # 使用ThreadPoolExecutor实现超时控制
+                            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                                future = executor.submit(func, *args, **kwargs)
+                                try:
+                                    return future.result(timeout=timeout)
+                                except concurrent.futures.TimeoutError:
+                                    raise TimeoutError(f"函数 {func.__name__} 执行超时")
+                        else:
+                            # 无超时控制
+                            return func(*args, **kwargs)
+                    except exceptions as e:
+                        attempts += 1
+                        if attempts == max_attempts:
+                            logger.error(f"函数 {func.__name__} 重试 {max_attempts} 次后失败: {str(e)}")
+                            raise
+                        logger.warning(f"函数 {func.__name__} 执行失败，{current_delay} 秒后重试: {str(e)}")
+                        import time
+                        time.sleep(current_delay)
+                        current_delay *= backoff
+            return sync_wrapper
+    return decorator
+
 # 导入消息队列管理器
-from utils.message_queue import message_queue_manager
+from utils.message_queue import message_queue_manager, MockMessageQueueManager
 
 # 配置日志
 log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
 os.makedirs(log_dir, exist_ok=True)
 log_file = os.path.join(log_dir, 'mirageshield.log')
 
+# 异步日志处理器
+class AsyncRotatingFileHandler(logging.Handler):
+    """异步日志处理器，使用线程池处理日志写入"""
+    def __init__(self, filename, maxBytes=0, backupCount=0, encoding=None, delay=False, queue_size=1000):
+        super().__init__()
+        self.filename = filename
+        self.maxBytes = maxBytes
+        self.backupCount = backupCount
+        self.encoding = encoding
+        self.delay = delay
+        self.queue_size = queue_size
+        self.file_handler = RotatingFileHandler(
+            filename, maxBytes=maxBytes, backupCount=backupCount, encoding=encoding, delay=delay
+        )
+        # 创建队列和线程池
+        import queue
+        import concurrent.futures
+        self.log_queue = queue.Queue(maxsize=queue_size)
+        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+        # 启动日志处理线程
+        self._running = True
+        self.executor.submit(self._process_logs)
+    
+    def setFormatter(self, fmt):
+        super().setFormatter(fmt)
+        self.file_handler.setFormatter(fmt)
+    
+    def setLevel(self, level):
+        super().setLevel(level)
+        self.file_handler.setLevel(level)
+    
+    def _process_logs(self):
+        """处理队列中的日志"""
+        while self._running:
+            try:
+                # 从队列中获取日志，超时1秒
+                record = self.log_queue.get(timeout=1)
+                if record is None:
+                    break
+                try:
+                    self.file_handler.emit(record)
+                except Exception:
+                    self.handleError(record)
+                finally:
+                    self.log_queue.task_done()
+            except queue.Empty:
+                continue
+            except Exception as e:
+                logger.error(f"处理日志时出错: {str(e)}")
+    
+    def emit(self, record):
+        """异步发送日志记录"""
+        try:
+            # 尝试将日志放入队列，队列满时使用阻塞策略
+            self.log_queue.put(record, block=True, timeout=1)
+        except queue.Full:
+            # 队列满时，直接同步写入
+            try:
+                self.file_handler.emit(record)
+            except Exception:
+                self.handleError(record)
+    
+    def close(self):
+        """关闭处理器"""
+        try:
+            # 停止日志处理
+            self._running = False
+            # 向队列中添加None作为结束信号
+            self.log_queue.put(None, block=True, timeout=1)
+            # 等待队列处理完成
+            self.log_queue.join()
+        except Exception as e:
+            logger.error(f"关闭日志队列时出错: {str(e)}")
+        
+        try:
+            if hasattr(self, 'executor') and self.executor:
+                self.executor.shutdown(wait=True, cancel_futures=True)
+                logger.info("异步日志处理器线程池已关闭")
+        except Exception as e:
+            logger.error(f"关闭异步日志处理器线程池时出错: {str(e)}")
+        
+        try:
+            if hasattr(self, 'file_handler') and self.file_handler:
+                self.file_handler.close()
+                logger.info("日志文件处理器已关闭")
+        except Exception as e:
+            logger.error(f"关闭日志文件处理器时出错: {str(e)}")
+        
+        super().close()
+
 # 配置根日志记录器
 root_logger = logging.getLogger()
-root_logger.setLevel(logging.INFO)
+# 根据环境设置日志级别
+flask_env = os.environ.get('FLASK_ENV', 'development')
+if flask_env == 'production':
+    root_logger.setLevel(logging.WARNING)
+else:
+    root_logger.setLevel(logging.INFO)
 
 # 控制台处理器
 console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
+if flask_env == 'production':
+    console_handler.setLevel(logging.WARNING)
+else:
+    console_handler.setLevel(logging.INFO)
 console_formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(name)s:%(funcName)s:%(lineno)d - %(message)s')
 console_handler.setFormatter(console_formatter)
 
-# 文件处理器 (使用RotatingFileHandler限制日志大小)
+# 异步文件处理器
 from logging.handlers import RotatingFileHandler
-file_handler = RotatingFileHandler(log_file, maxBytes=10*1024*1024, backupCount=5, encoding='utf-8')
-file_handler.setLevel(logging.INFO)
+file_handler = AsyncRotatingFileHandler(log_file, maxBytes=10*1024*1024, backupCount=5, encoding='utf-8')
+if flask_env == 'production':
+    file_handler.setLevel(logging.WARNING)
+else:
+    file_handler.setLevel(logging.INFO)
 file_formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(name)s:%(funcName)s:%(lineno)d - %(message)s')
 file_handler.setFormatter(file_formatter)
 
@@ -104,7 +349,8 @@ else:
             logger.error(f"保存密钥文件失败: {str(e)}")
 
 app.config['SECRET_KEY'] = secret_key
-app.config['JWT_EXPIRATION_DELTA'] = timedelta(hours=24)
+app.config['JWT_EXPIRATION_DELTA'] = timedelta(hours=1)  # 缩短访问令牌有效期，提高安全性
+app.config['JWT_REFRESH_EXPIRATION_DELTA'] = timedelta(days=7)  # 刷新令牌有效期
 
 # 导入认证模块
 from api.auth import register_auth_routes, require_auth
@@ -151,6 +397,9 @@ def initialize_app():
     if not _message_queue_initialized.is_set():
         with _message_queue_lock:
             if not _message_queue_initialized.is_set():
+                # 声明全局变量
+                global message_queue_manager
+                
                 # 注册智能体到消息队列
                 message_queue_manager.register_agent('prober')
                 message_queue_manager.register_agent('baiter')
@@ -205,9 +454,15 @@ def initialize_app():
                     else:
                         logger.warning("消息队列初始化失败，继续启动应用")
                         _message_queue_started = False
+                        # 消息队列初始化失败时，创建一个模拟的消息队列管理器
+                        message_queue_manager = MockMessageQueueManager()
+                        logger.info("已创建模拟消息队列管理器")
                 else:
                     logger.warning("消息队列初始化超时，继续启动应用")
                     _message_queue_started = False
+                    # 消息队列初始化超时时，创建一个模拟的消息队列管理器
+                    message_queue_manager = MockMessageQueueManager()
+                    logger.info("已创建模拟消息队列管理器")
 
 # 定义降级类
 class MockLANDiscovery:
@@ -261,7 +516,7 @@ try:
     from data_plane.real_data_pool import RealDataPool
     from data_plane.decoy_data_pool import DecoyDataPool
     from data_plane.virtual_network_layer import VirtualNetworkLayer
-    from community.联防接口 import CommunityDefenseInterface
+    from community.joint_defense_interface import CommunityDefenseInterface
     from agents.ai1.explorer import ProberAgent
     from agents.ai2.baiter import BaiterAgent
     from agents.ai3.watcher import WatcherAgent
@@ -330,7 +585,7 @@ except Exception as e:
     raise
 
 # 缓存清理定时任务
-_cache_cleanup_interval = 30  # 每30秒清理一次，缩短清理间隔
+_cache_cleanup_interval = 300  # 每5分钟清理一次，优化清理间隔
 _cache_cleanup_thread = None
 _cache_cleanup_running = False
 
@@ -377,25 +632,197 @@ def health_check():
 
 # 全局线程池变量
 executor = None
+_executor_max_workers = 0
+
+# 任务优先级枚举
+class TaskPriority:
+    HIGH = 0
+    MEDIUM = 1
+    LOW = 2
+
+# 带优先级的任务类
+class PriorityTask:
+    def __init__(self, priority, func, *args, **kwargs):
+        self.priority = priority
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
+    
+    def __lt__(self, other):
+        return self.priority > other.priority
 
 # 初始化线程池
 def init_executor():
     """初始化线程池"""
-    global executor
+    global executor, _executor_max_workers
     if not executor:
         logger.info("初始化线程池...")
         
         # 初始化线程池，根据CPU核心数设置线程数
         import concurrent.futures
         import os
-        cpu_count = os.cpu_count() or 4
-        max_workers = cpu_count * 3  # CPU核心数的3倍
+        import threading
+        import queue
         
+        # 动态计算线程池大小
+        cpu_count = os.cpu_count() or 4
+        # 根据系统负载动态调整线程数
+        try:
+            import psutil
+            try:
+                cpu_percent = psutil.cpu_percent(interval=1)
+                if cpu_percent > 70:
+                    # 高负载时减少线程数
+                    max_workers = max(1, cpu_count * 2)
+                else:
+                    # 正常负载时使用默认线程数
+                    max_workers = cpu_count * 3
+            except Exception as e:
+                logger.warning(f"获取系统负载失败: {str(e)}，使用默认线程数")
+                max_workers = cpu_count * 3
+        except ImportError:
+            logger.warning("psutil模块未安装，使用默认线程数")
+            max_workers = cpu_count * 3
+        
+        _executor_max_workers = max_workers
         executor = concurrent.futures.ThreadPoolExecutor(
             max_workers=max_workers, 
             thread_name_prefix='strategy_update'
         )
         logger.info(f"线程池初始化完成，最大工作线程数: {max_workers}")
+
+# 优先级任务队列
+import queue
+import threading
+priority_task_queue = queue.PriorityQueue()
+dead_letter_queue = queue.Queue()  # 死信队列，用于存储失败的任务
+priority_task_thread = None
+priority_task_running = False
+priority_task_stop_event = threading.Event()  # 用于控制任务线程优雅退出
+
+# 处理优先级任务的线程函数
+def process_priority_tasks():
+    """处理优先级任务"""
+    global priority_task_queue, priority_task_running, executor
+    priority_task_running = True
+    priority_task_stop_event.clear()  # 重置停止事件
+    logger.info("优先级任务处理线程已启动")
+    
+    while not priority_task_stop_event.is_set():
+        task = None
+        try:
+            # 从队列中获取任务，超时1秒
+            task = priority_task_queue.get(timeout=1)
+            if task is None:
+                break
+            
+            # 确保线程池已初始化
+            if not executor:
+                init_executor()
+            
+            # 添加重试逻辑
+            max_retries = 3
+            retry_count = 0
+            
+            while retry_count < max_retries and not priority_task_stop_event.is_set():
+                try:
+                    # 提交任务到线程池
+                    future = executor.submit(task.func, *task.args, **task.kwargs)
+                    # 等待任务完成，获取结果
+                    future.result()
+                    # 任务成功完成
+                    priority_task_queue.task_done()
+                    break
+                except Exception as e:
+                    retry_count += 1
+                    logger.error(f"处理优先级任务时出错 (尝试 {retry_count}/{max_retries}): {str(e)}")
+                    if retry_count < max_retries:
+                        # 等待一段时间后重试
+                        import time
+                        time.sleep(1 * retry_count)  # 指数退避
+                    else:
+                        # 达到最大重试次数，将任务放入死信队列
+                        logger.error(f"任务达到最大重试次数，放入死信队列")
+                        dead_letter_queue.put((task, e))
+                        priority_task_queue.task_done()
+        except queue.Empty:
+            continue
+        except Exception as e:
+            logger.error(f"处理优先级任务队列时出错: {str(e)}")
+        finally:
+            # 确保在任务被取出的情况下调用task_done()
+            if task is not None:
+                try:
+                    priority_task_queue.task_done()
+                except ValueError:
+                    # 避免重复调用task_done()
+                    pass
+    
+    # 处理完所有剩余任务
+    logger.info("开始处理剩余任务...")
+    while not priority_task_queue.empty() and not priority_task_stop_event.is_set():
+        try:
+            task = priority_task_queue.get(timeout=1)
+            if task is None:
+                break
+            
+            # 确保线程池已初始化
+            if not executor:
+                init_executor()
+            
+            # 提交任务到线程池
+            future = executor.submit(task.func, *task.args, **task.kwargs)
+            # 等待任务完成，获取结果
+            future.result()
+            # 任务成功完成
+            priority_task_queue.task_done()
+        except queue.Empty:
+            break
+        except Exception as e:
+            logger.error(f"处理剩余任务时出错: {str(e)}")
+            # 标记任务为完成，避免队列阻塞
+            try:
+                priority_task_queue.task_done()
+            except:
+                pass
+    
+    priority_task_running = False
+    logger.info("优先级任务处理线程已停止")
+
+# 停止优先级任务处理线程
+def stop_priority_task_thread():
+    """停止优先级任务处理线程"""
+    global priority_task_stop_event, priority_task_running
+    if priority_task_running:
+        logger.info("停止优先级任务处理线程...")
+        priority_task_stop_event.set()
+        # 等待线程结束
+        if priority_task_thread:
+            priority_task_thread.join(timeout=5)
+        logger.info("优先级任务处理线程已停止")
+
+# 启动优先级任务处理线程
+def start_priority_task_thread():
+    """启动优先级任务处理线程"""
+    global priority_task_thread, priority_task_running
+    if not priority_task_running:
+        import threading
+        priority_task_thread = threading.Thread(target=process_priority_tasks, daemon=True)
+        priority_task_thread.start()
+        logger.info("优先级任务处理线程已启动")
+
+# 提交优先级任务
+def submit_priority_task(priority, func, *args, **kwargs):
+    """提交带优先级的任务"""
+    # 启动优先级任务处理线程
+    start_priority_task_thread()
+    
+    # 创建优先级任务
+    task = PriorityTask(priority, func, *args, **kwargs)
+    # 将任务添加到优先级队列
+    priority_task_queue.put(task)
+    logger.debug(f"提交优先级任务，优先级: {priority}")
+    return task
 
 # 应用启动时执行初始化
 logger.info("应用启动时开始初始化组件...")
@@ -404,6 +831,79 @@ initialize_app()
 logger.info("初始化用户数据...")
 from api.auth import load_users
 load_users()
+
+# 连接频率限制相关变量
+connection_rate_limit = {}
+connection_rate_limit_lock = threading.Lock()
+# 连接频率限制存储文件
+CONNECTION_RATE_LIMIT_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'connection_rate_limit.json')
+# 连接频率限制文件锁
+connection_rate_limit_file_lock = threading.Lock()
+
+# 保存连接频率限制
+def save_connection_rate_limit():
+    """保存连接频率限制数据"""
+    try:
+        # 确保数据目录存在
+        os.makedirs(os.path.dirname(CONNECTION_RATE_LIMIT_FILE), exist_ok=True)
+        # 清理过期数据后保存
+        current_time = time.time()
+        data_to_save = {}
+        with connection_rate_limit_lock:
+            for ip, timestamps in connection_rate_limit.items():
+                # 只保存1分钟内的记录
+                recent_timestamps = [ts for ts in timestamps if current_time - ts < 60]
+                if recent_timestamps:
+                    data_to_save[ip] = recent_timestamps
+        # 保存到文件
+        with connection_rate_limit_file_lock:
+            with open(CONNECTION_RATE_LIMIT_FILE, 'w', encoding='utf-8') as f:
+                json.dump(data_to_save, f, indent=2)
+        logger.info(f"保存连接频率限制数据成功，共 {len(data_to_save)} 条记录")
+    except Exception as e:
+        logger.error(f"保存连接频率限制数据失败: {str(e)}")
+
+# 定期保存连接频率限制的任务
+def start_connection_rate_limit_save_task():
+    """启动定期保存连接频率限制的任务"""
+    def save_task():
+        while True:
+            try:
+                save_connection_rate_limit()
+                # 每30秒保存一次
+                time.sleep(30)
+            except Exception as e:
+                logger.error(f"保存连接频率限制任务出错: {str(e)}")
+                time.sleep(30)
+    
+    # 启动保存任务线程
+    save_thread = threading.Thread(target=save_task, daemon=True)
+    save_thread.start()
+    logger.info("定期保存连接频率限制的任务已启动")
+
+# 定义加载连接频率限制函数
+def load_connection_rate_limit():
+    """加载连接频率限制数据"""
+    global connection_rate_limit
+    try:
+        if os.path.exists(CONNECTION_RATE_LIMIT_FILE):
+            with connection_rate_limit_file_lock:
+                with open(CONNECTION_RATE_LIMIT_FILE, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    # 转换时间戳字符串为浮点数
+                    with connection_rate_limit_lock:
+                        for ip, timestamps in data.items():
+                            connection_rate_limit[ip] = [float(ts) for ts in timestamps]
+            logger.info(f"加载连接频率限制数据成功，共 {len(connection_rate_limit)} 条记录")
+    except Exception as e:
+        logger.error(f"加载连接频率限制数据失败: {str(e)}")
+
+# 加载连接频率限制数据
+logger.info("加载连接频率限制数据...")
+load_connection_rate_limit()
+# 启动定期保存连接频率限制的任务
+logger.info("启动定期保存连接频率限制的任务...")
+start_connection_rate_limit_save_task()
 logger.info("应用组件初始化完成")
 
 # 应用启动钩子（仅用于确保初始化）
@@ -425,9 +925,10 @@ def index():
 # 智能体相关接口
 @app.route('/api/agents', methods=['GET'])
 @require_auth
-@cached(timeout=60)  # 缓存60秒
+@cached(timeout=300)  # 缓存5分钟，智能体列表不常变化
 def get_agents():
     """获取智能体列表"""
+
     agents = [
         {
             "name": "prober",
@@ -449,9 +950,11 @@ def get_agents():
 
 @app.route('/api/agents/<agent_name>/status', methods=['GET'])
 @require_auth
-@cached(timeout=10)  # 缓存10秒
+@cached(timeout=30)  # 缓存30秒，智能体状态可能会变化
+
 def get_agent_status(agent_name):
     """获取智能体状态"""
+
     try:
         status = strategy_engine.get_agent_states().get(agent_name, {})
         return jsonify(status)
@@ -461,7 +964,8 @@ def get_agent_status(agent_name):
 # 策略相关接口
 @app.route('/api/strategy', methods=['GET'])
 @require_auth
-@cached(timeout=10)  # 缓存10秒
+@cached(timeout=30)  # 缓存30秒，策略可能会变化
+
 def get_strategy():
     """获取当前策略"""
     try:
@@ -476,6 +980,17 @@ def update_strategy():
     """更新策略"""
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({"error": "请求数据不能为空"}), 400
+        
+        # 验证输入数据
+        schema = {
+            'threat_assessment': (True, dict, 10000)
+        }
+        valid, errors = validate_input(data, schema)
+        if not valid:
+            return jsonify({"error": "输入验证失败", "errors": errors}), 400
+        
         threat_assessment = data.get('threat_assessment', {})
         strategy = strategy_engine.update_strategy(threat_assessment)
         # 清除相关缓存
@@ -491,6 +1006,17 @@ def assess_threat():
     """评估威胁"""
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({"error": "请求数据不能为空"}), 400
+        
+        # 验证输入数据
+        schema = {
+            'attacker_info': (True, dict, 10000)
+        }
+        valid, errors = validate_input(data, schema)
+        if not valid:
+            return jsonify({"error": "输入验证失败", "errors": errors}), 400
+        
         attacker_info = data.get('attacker_info', {})
         assessment = security_assessment.assess_threat(attacker_info)
         
@@ -506,8 +1032,8 @@ def assess_threat():
                 logger.error(f"策略更新失败: {str(e)}")
                 raise
         
-        # 使用线程池提交任务并添加异常处理回调
-        future = executor.submit(update_strategy_async)
+        # 使用优先级任务提交
+        future = submit_priority_task(TaskPriority.HIGH, update_strategy_async)
         
         def handle_future_result(future):
             try:
@@ -540,6 +1066,19 @@ def store_real_data():
     """存储真实数据"""
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({"error": "请求数据不能为空"}), 400
+        
+        # 验证输入数据
+        schema = {
+            'data': (True, (dict, list), 100000),
+            'data_type': (False, str, 100),
+            'agent_name': (False, str, 100)
+        }
+        valid, errors = validate_input(data, schema)
+        if not valid:
+            return jsonify({"error": "输入验证失败", "errors": errors}), 400
+        
         data_content = data.get('data', {})
         data_type = data.get('data_type', 'unknown')
         agent_name = data.get('agent_name', 'prober')
@@ -566,6 +1105,20 @@ def store_decoy_data():
     """存储诱饵数据"""
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({"error": "请求数据不能为空"}), 400
+        
+        # 验证输入数据
+        schema = {
+            'data': (True, (dict, list), 100000),
+            'data_type': (False, str, 100),
+            'agent_name': (False, str, 100),
+            'watermark': (False, str, 1000)
+        }
+        valid, errors = validate_input(data, schema)
+        if not valid:
+            return jsonify({"error": "输入验证失败", "errors": errors}), 400
+        
         data_content = data.get('data', {})
         data_type = data.get('data_type', 'unknown')
         agent_name = data.get('agent_name', 'baiter')
@@ -590,9 +1143,11 @@ def get_decoy_data(data_id):
 # 网络相关接口
 @app.route('/api/network/topology', methods=['GET'])
 @require_auth
-@cached(timeout=30)  # 缓存30秒
+@cached(timeout=60)  # 缓存1分钟，网络拓扑不常变化
+
 def get_network_topology():
     """获取网络拓扑"""
+
     try:
         topology = virtual_network.get_network_topology()
         return jsonify(topology)
@@ -601,7 +1156,8 @@ def get_network_topology():
 
 @app.route('/api/network/health', methods=['GET'])
 @require_auth
-@cached(timeout=10)  # 缓存10秒
+@cached(timeout=30)  # 缓存30秒，网络健康状态可能会变化
+
 def get_network_health():
     """获取网络健康状态"""
     try:
@@ -637,6 +1193,7 @@ def reconstruct_network():
 # 社区联防相关接口
 @app.route('/api/community/sync', methods=['POST'])
 @require_auth
+@retry(max_attempts=3, delay=2, backoff=2, exceptions=(Exception,))
 def sync_with_community():
     """与社区同步"""
     try:
@@ -660,7 +1217,8 @@ def sync_with_community():
 
 @app.route('/api/community/blacklist', methods=['GET'])
 @require_auth
-@cached(timeout=60)  # 缓存60秒
+@cached(timeout=300)  # 缓存5分钟，黑名单不常变化
+
 def get_blacklist():
     """获取黑名单"""
     try:
@@ -671,7 +1229,8 @@ def get_blacklist():
 
 @app.route('/api/community/threats', methods=['GET'])
 @require_auth
-@cached(timeout=60)  # 缓存60秒
+@cached(timeout=300)  # 缓存5分钟，威胁情报不常变化
+
 def get_threat_intel():
     """获取威胁情报"""
     try:
@@ -683,7 +1242,8 @@ def get_threat_intel():
 # 系统状态接口
 @app.route('/api/system/status', methods=['GET'])
 @require_auth
-@cached(timeout=10)  # 缓存10秒
+@cached(timeout=30)  # 缓存30秒，系统状态可能会变化
+
 def get_system_status():
     """获取系统状态"""
     try:
@@ -769,6 +1329,17 @@ def set_protection_level():
     """设置防护级别"""
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({"error": "请求数据不能为空"}), 400
+        
+        # 验证输入数据
+        schema = {
+            'level': (True, int, None)
+        }
+        valid, errors = validate_input(data, schema)
+        if not valid:
+            return jsonify({"error": "输入验证失败", "errors": errors}), 400
+        
         level = data.get('level', 1)  # 默认基础防护
         
         # 验证防护级别范围
@@ -826,7 +1397,8 @@ def set_protection_level():
 # 分层防御相关接口
 @app.route('/api/defense/layers', methods=['GET'])
 @require_auth
-@cached(timeout=60)  # 缓存60秒
+@cached(timeout=300)  # 缓存5分钟，防御层配置不常变化
+
 def get_defense_layers():
     """获取所有防御层"""
     try:
@@ -837,7 +1409,8 @@ def get_defense_layers():
 
 @app.route('/api/defense/status', methods=['GET'])
 @require_auth
-@cached(timeout=10)  # 缓存10秒
+@cached(timeout=30)  # 缓存30秒，防御状态可能会变化
+
 def get_defense_status():
     """获取各层防御状态"""
     try:
@@ -883,7 +1456,8 @@ def get_defense_history():
 
 @app.route('/api/defense/statistics', methods=['GET'])
 @require_auth
-@cached(timeout=60)  # 缓存60秒
+@cached(timeout=300)  # 缓存5分钟，统计信息不常变化
+
 def get_defense_statistics():
     """获取防御统计信息"""
     try:
@@ -907,23 +1481,59 @@ def get_lan_nodes():
 # 连接频率限制存储
 connection_rate_limit = {}
 connection_rate_limit_lock = threading.Lock()
+# 连接频率限制存储文件
+CONNECTION_RATE_LIMIT_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'connection_rate_limit.json')
+# 连接频率限制文件锁
+connection_rate_limit_file_lock = threading.Lock()
 
 # IP白名单
 IP_WHITELIST = set()
 
-# 加载API配置
-try:
-    config_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'config')
-    with open(os.path.join(config_dir, 'api_config.json'), 'r', encoding='utf-8') as f:
-        api_config = json.load(f)
-    IP_WHITELIST = set(api_config.get('api', {}).get('ip_whitelist', []))
-except Exception as e:
-    logger.warning(f"加载API配置失败: {e}，使用默认IP白名单")
-    IP_WHITELIST = {
-        '192.168.0.0/16',
-        '10.0.0.0/8',
-        '172.16.0.0/12'
-    }
+# 加载配置管理器
+from utils.config_manager import config_manager
+
+
+
+# 保存连接频率限制
+def save_connection_rate_limit():
+    """保存连接频率限制数据"""
+    try:
+        # 确保数据目录存在
+        os.makedirs(os.path.dirname(CONNECTION_RATE_LIMIT_FILE), exist_ok=True)
+        # 清理过期数据后保存
+        current_time = time.time()
+        data_to_save = {}
+        with connection_rate_limit_lock:
+            for ip, timestamps in connection_rate_limit.items():
+                # 只保存1分钟内的记录
+                recent_timestamps = [ts for ts in timestamps if current_time - ts < 60]
+                if recent_timestamps:
+                    data_to_save[ip] = recent_timestamps
+        # 保存到文件
+        with connection_rate_limit_file_lock:
+            with open(CONNECTION_RATE_LIMIT_FILE, 'w', encoding='utf-8') as f:
+                json.dump(data_to_save, f, indent=2)
+        logger.info(f"保存连接频率限制数据成功，共 {len(data_to_save)} 条记录")
+    except Exception as e:
+        logger.error(f"保存连接频率限制数据失败: {str(e)}")
+
+# 定期保存连接频率限制的任务
+def start_connection_rate_limit_save_task():
+    """启动定期保存连接频率限制的任务"""
+    def save_task():
+        while True:
+            try:
+                save_connection_rate_limit()
+                # 每30秒保存一次
+                time.sleep(30)
+            except Exception as e:
+                logger.error(f"保存连接频率限制任务出错: {str(e)}")
+                time.sleep(30)
+    
+    import threading
+    save_thread = threading.Thread(target=save_task, daemon=True)
+    save_thread.start()
+    logger.info("定期保存连接频率限制的任务已启动")
 
 # 检查IP是否在白名单中
 def is_ip_whitelisted(ip):
@@ -946,24 +1556,29 @@ def check_rate_limit(client_ip):
         if client_ip not in connection_rate_limit:
             connection_rate_limit[client_ip] = []
         
-        # 清理1分钟前的记录
-        connection_rate_limit[client_ip] = [t for t in connection_rate_limit[client_ip] if current_time - t < 60]
+        # 从配置中获取频率限制参数
+        max_connections = config_manager.get('api.rate_limit.max_connections', 5)
+        window_seconds = config_manager.get('api.rate_limit.window_seconds', 60)
         
-        # 检查1分钟内的连接次数
-        if len(connection_rate_limit[client_ip]) >= 5:  # 每分钟最多5次连接
+        # 清理过期的记录
+        connection_rate_limit[client_ip] = [t for t in connection_rate_limit[client_ip] if current_time - t < window_seconds]
+        
+        # 检查时间窗口内的连接次数
+        if len(connection_rate_limit[client_ip]) >= max_connections:  # 时间窗口内最多max_connections次连接
             return False
         
         # 记录本次连接
         connection_rate_limit[client_ip].append(current_time)
         
-        # 确保列表不会无限增长，最多保留10条记录
-        if len(connection_rate_limit[client_ip]) > 10:
-            connection_rate_limit[client_ip] = connection_rate_limit[client_ip][-10:]
+        # 确保列表不会无限增长，最多保留2倍max_connections条记录
+        if len(connection_rate_limit[client_ip]) > max_connections * 2:
+            connection_rate_limit[client_ip] = connection_rate_limit[client_ip][-max_connections*2:]
         
         return True
 
 @app.route('/api/lan/connect', methods=['POST'])
 @require_auth
+@retry(max_attempts=3, delay=1, backoff=2, exceptions=(Exception,))
 def connect_to_lan_node():
     """连接到局域网节点"""
     try:
@@ -975,6 +1590,9 @@ def connect_to_lan_node():
             return jsonify({"error": "连接频率过高，请稍后再试"}), 429
         
         data = request.get_json()
+        if not data:
+            return jsonify({"error": "请求数据不能为空"}), 400
+        
         ip = data.get('ip')
         port = data.get('port', 5001)
         
@@ -1000,17 +1618,29 @@ def connect_to_lan_node():
 # 数据传输接口
 @app.route('/api/data/send', methods=['POST'])
 @require_auth
+@retry(max_attempts=3, delay=1, backoff=2, exceptions=(Exception,))
 def send_data():
     """发送数据到目标节点"""
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({"error": "请求数据不能为空"}), 400
+        
+        # 验证输入数据
+        schema = {
+            'target_node': (True, str, 100),
+            'data_id': (True, str, 100),
+            'data': (True, (dict, list, str), 1000000),
+            'chunk_size': (False, int, None)
+        }
+        valid, errors = validate_input(data, schema)
+        if not valid:
+            return jsonify({"error": "输入验证失败", "errors": errors}), 400
+        
         target_node = data.get('target_node')
         data_id = data.get('data_id')
         data_content = data.get('data')
         chunk_size = data.get('chunk_size', 1024 * 1024)
-        
-        if not target_node or not data_id or data_content is None:
-            return jsonify({"error": "缺少必要参数"}), 400
         
         transfer_id = data_transfer_manager.send_data(target_node, data_id, data_content, chunk_size)
         if transfer_id:
@@ -1226,6 +1856,40 @@ def get_security_event_stats():
         logger.error(f"获取安全事件统计失败: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+# 消息队列监控接口
+@app.route('/api/message-queue/status', methods=['GET'])
+@require_auth
+def get_message_queue_status():
+    """获取消息队列状态"""
+    try:
+        status = message_queue_manager.get_queue_status()
+        return jsonify(status)
+    except Exception as e:
+        logger.error(f"获取消息队列状态失败: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/message-queue/stats', methods=['GET'])
+@require_auth
+def get_message_queue_stats():
+    """获取消息队列统计信息"""
+    try:
+        stats = message_queue_manager.get_message_stats()
+        return jsonify(stats)
+    except Exception as e:
+        logger.error(f"获取消息队列统计失败: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/message-queue/health', methods=['GET'])
+@require_auth
+def get_message_queue_health():
+    """获取消息队列健康状态"""
+    try:
+        health = message_queue_manager.get_health_status()
+        return jsonify(health)
+    except Exception as e:
+        logger.error(f"获取消息队列健康状态失败: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 # 应用退出时清理资源
 def cleanup_resources():
     """应用退出时清理资源"""
@@ -1248,16 +1912,61 @@ def cleanup_resources():
     global executor
     if executor:
         logger.info("关闭线程池...")
+        # 检查Python版本，cancel_futures参数在Python 3.9+中可用
+        import sys
         try:
-            executor.shutdown(wait=True)
-            logger.info("线程池已关闭")
+            if sys.version_info >= (3, 9):
+                executor.shutdown(wait=True, cancel_futures=True)
+            else:
+                # Python 3.9以下版本，先尝试正常关闭
+                executor.shutdown(wait=True)
         except Exception as e:
-            logger.warning(f"线程池关闭异常: {str(e)}")
-            executor.shutdown(wait=False)
-            logger.info("线程池已强制关闭")
+            # 异常情况下强制关闭
+            try:
+                if sys.version_info >= (3, 9):
+                    executor.shutdown(wait=False, cancel_futures=True)
+                else:
+                    executor.shutdown(wait=False)
+            except:
+                pass
+        logger.info("线程池已关闭")
     
     # 停止缓存清理任务
     stop_cache_cleanup_task()
+    
+    # 停止优先级任务处理线程
+    stop_priority_task_thread()
+    
+    # 清理消息队列
+    try:
+        logger.info("清理消息队列...")
+        # 尝试停止消息队列处理
+        if message_queue_manager:
+            try:
+                import asyncio
+                
+                # 定义异步函数
+                async def stop_message_queue():
+                    await message_queue_manager.stop_processing()
+                
+                # 在同步环境中安全调用异步函数
+                asyncio.run(stop_message_queue())
+                logger.info("消息队列处理已停止")
+            except Exception as e:
+                logger.warning(f"停止消息队列处理时出错: {str(e)}")
+        logger.info("消息队列已清理")
+    except Exception as e:
+        logger.warning(f"清理消息队列时出错: {str(e)}")
+    
+    # 关闭日志处理器
+    try:
+        logger.info("关闭日志处理器...")
+        for handler in root_logger.handlers:
+            if hasattr(handler, 'close'):
+                handler.close()
+        logger.info("日志处理器已关闭")
+    except Exception as e:
+        print(f"关闭日志处理器时出错: {str(e)}")
 
 # 注册退出处理函数
 atexit.register(cleanup_resources)

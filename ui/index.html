@@ -1116,13 +1116,13 @@
         
         <div class="grid">
             <div class="status-section" id="lan-status-section">
-                <h2 class="section-title">局域网管理</h2>
+                <h2 class="section-title" id="lan-title">局域网管理</h2>
                 <div id="lan-status" class="loading">
                     加载中...
                 </div>
                 <div style="margin-top: 20px;">
-                    <button class="btn btn-primary" onclick="refreshLanNodes()">刷新节点</button>
-                    <button class="btn btn-info" onclick="connectToLanNode()">连接节点</button>
+                    <button class="btn btn-primary" onclick="refreshLanNodes()" id="refresh-nodes-btn">刷新节点</button>
+                    <button class="btn btn-info" onclick="connectToLanNode()" id="connect-node-btn">连接节点</button>
                 </div>
             </div>
             
@@ -1483,12 +1483,27 @@
             // 系统监控部分
             const monitoringTitle = document.getElementById('monitoring-section-title');
             if (monitoringTitle) {
-                monitoringTitle.textContent = '系统监控';
+                monitoringTitle.textContent = t('section.system_monitoring');
             }
             // 硬件管理部分
             const hardwareTitle = document.getElementById('hardware-section-title');
             if (hardwareTitle) {
-                hardwareTitle.textContent = '硬件管理';
+                hardwareTitle.textContent = t('section.hardware_management');
+            }
+            // 局域网管理部分
+            const lanTitle = document.getElementById('lan-title');
+            if (lanTitle) {
+                lanTitle.textContent = t('section.lan_status');
+            }
+            // 刷新节点按钮
+            const refreshNodesBtn = document.getElementById('refresh-nodes-btn');
+            if (refreshNodesBtn) {
+                refreshNodesBtn.textContent = t('lan.refresh_nodes');
+            }
+            // 连接节点按钮
+            const connectNodeBtn = document.getElementById('connect-node-btn');
+            if (connectNodeBtn) {
+                connectNodeBtn.textContent = t('lan.connect_node');
             }
         }
         
@@ -1555,7 +1570,7 @@
             .then(data => {
                 if (data.success) {
                     // 保存认证信息
-                    token = data.token;
+                    token = data.access_token;
                     user = data.user;
                     localStorage.setItem('token', token);
                     localStorage.setItem('user', JSON.stringify(user));
@@ -2766,9 +2781,9 @@
                                 <div class="status-card">
                                     <div class="card-title">${node.name}</div>
                                     <div class="card-content">
-                                        IP: ${node.ip} | 
-                                        端口: ${node.port} | 
-                                        状态: ${node.status}
+                                        ${t('lan.ip')}: ${node.ip} | 
+                                        ${t('lan.port')}: ${node.port} | 
+                                        ${t('lan.status')}: ${node.status}
                                     </div>
                                 </div>
                             `;
