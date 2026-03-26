@@ -676,15 +676,19 @@
             overflow: auto;
             background-color: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
         }
         
         .modal-content {
             background: linear-gradient(135deg, #0a192f, #172a45);
-            margin: 15% auto;
             padding: 30px;
             border: 1px solid rgba(100, 255, 218, 0.5);
             width: 90%;
             max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            overflow-x: hidden;
             border-radius: 10px;
             box-shadow: 0 0 30px rgba(100, 255, 218, 0.5);
         }
@@ -1062,6 +1066,22 @@
                     <button type="submit" class="btn btn-primary">修改密码</button>
                 </div>
             </form>
+        </div>
+    </div>
+    
+    <!-- 社区联防详情模态框 -->
+    <div id="communityDetailsModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close" onclick="closeCommunityDetailsModal()">&times;</span>
+            <div class="modal-header">
+                <h2 id="communityDetailsModalTitle">社区联防详情</h2>
+            </div>
+            <div id="communityDetailsModalContent">
+                <!-- 内容将通过JavaScript动态填充 -->
+            </div>
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn btn-secondary" onclick="closeCommunityDetailsModal()">关闭</button>
+            </div>
         </div>
     </div>
     
@@ -1523,7 +1543,7 @@
         
         // 打开登录模态框
         function openLoginModal() {
-            document.getElementById('loginModal').style.display = 'block';
+            document.getElementById('loginModal').style.display = 'flex';
         }
         
         // 关闭登录模态框
@@ -1533,7 +1553,7 @@
         
         // 打开注册模态框
         function openRegisterModal() {
-            document.getElementById('registerModal').style.display = 'block';
+            document.getElementById('registerModal').style.display = 'flex';
         }
         
         // 关闭注册模态框
@@ -1642,7 +1662,7 @@
         
         // 显示密码修改模态框
         function showPasswordChangeModal() {
-            document.getElementById('passwordChangeModal').style.display = 'block';
+            document.getElementById('passwordChangeModal').style.display = 'flex';
         }
         
         // 关闭密码修改模态框
@@ -1960,27 +1980,249 @@
         
         // 获取社区联防状态
         function getCommunityStatus() {
-            return authenticatedFetch(`${API_BASE}/api/community/blacklist`)
+            return Promise.all([
+                authenticatedFetch(`${API_BASE}/api/community/blacklist`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // 检查API返回的错误格式
+                        if (data.error || data.code === 500) {
+                            return { error: data.error || '未知错误', data: { ips: [], fingerprints: [], last_updated: '未知' } };
+                        }
+                        return { error: null, data: data };
+                    })
+                    .catch(error => {
+                        console.error('获取黑名单失败:', error);
+                        return { error: error.message, data: { ips: [], fingerprints: [], last_updated: '未知' } };
+                    }),
+                authenticatedFetch(`${API_BASE}/api/community/threats`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // 检查API返回的错误格式
+                        if (data.error || data.code === 500) {
+                            return { error: data.error || '未知错误', data: { threats: [], last_updated: '未知' } };
+                        }
+                        return { error: null, data: data };
+                    })
+                    .catch(error => {
+                        console.error('获取威胁情报失败:', error);
+                        return { error: error.message, data: { threats: [], last_updated: '未知' } };
+                    })
+            ])
+            .then(([blacklist, threats]) => {
+                const statusDiv = document.getElementById('community-status');
+                
+                // 检查是否有错误
+                if (blacklist.error || threats.error) {
+                    const errorMessage = blacklist.error || threats.error || '未知错误';
+                    statusDiv.innerHTML = `<div class="status-card danger"><div class="card-title">${t('error.loading')}</div><div class="card-content">${t('error.failed_to_get_community_status')}: ${errorMessage}</div></div>`;
+                    return;
+                }
+                
+                // 处理响应数据
+                const blacklistData = blacklist.data;
+                const threatsData = threats.data;
+                
+                statusDiv.innerHTML = `
+                    <div class="status-card">
+                        <div class="card-title">${t('community.blacklist')}</div>
+                        <div class="card-content">
+                            ${t('community.ip_count')}: ${blacklistData.ips.length} | 
+                            ${t('community.fingerprint_count')}: ${blacklistData.fingerprints.length}
+                        </div>
+                    </div>
+                    <div class="status-card">
+                        <div class="card-title">${t('community.last_updated')}</div>
+                        <div class="card-content">${blacklistData.last_updated}</div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-info" onclick="openCommunityDetailsModal()">${t('community.view_details')}</button>
+                    </div>
+                `;
+                
+                // 存储数据到全局变量，供模态框使用
+                window.communityData = {
+                    blacklist: blacklistData,
+                    threats: threatsData
+                };
+            })
+            .catch(error => {
+                document.getElementById('community-status').innerHTML = `<div class="status-card danger"><div class="card-title">${t('error.loading')}</div><div class="card-content">${t('error.failed_to_get_community_status')}: ${error.message}</div></div>`;
+            });
+        }
+        
+        // 打开社区联防详情模态框
+        function openCommunityDetailsModal() {
+            if (!window.communityData) {
+                showToast('数据未加载，请刷新页面', 'error');
+                return;
+            }
+            
+            const { blacklist, threats } = window.communityData;
+            
+            // 检查是否有错误
+            if (blacklist.error || threats.error) {
+                const errorMessage = blacklist.error || threats.error || '未知错误';
+                const modalContent = document.getElementById('communityDetailsModalContent');
+                modalContent.innerHTML = `<div class="status-card danger"><div class="card-title">${t('error.loading')}</div><div class="card-content">${t('error.failed_to_get_community_status')}: ${errorMessage}</div></div>`;
+                document.getElementById('communityDetailsModal').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                return;
+            }
+            
+            const modalContent = document.getElementById('communityDetailsModalContent');
+            
+            // 获取同步状态
+            authenticatedFetch(`${API_BASE}/api/system/status`)
                 .then(response => response.json())
-                .then(blacklist => {
-                    const statusDiv = document.getElementById('community-status');
-                    statusDiv.innerHTML = `
+                .then(systemStatus => {
+                    modalContent.innerHTML = `
                         <div class="status-card">
-                            <div class="card-title">${t('community.blacklist')}</div>
+                            <div class="card-title">${t('community.blacklist_ips')}</div>
                             <div class="card-content">
-                                ${t('community.ip_count')}: ${blacklist.ips.length} | 
-                                ${t('community.fingerprint_count')}: ${blacklist.fingerprints.length}
+                                ${blacklist.ips.length > 0 ? 
+                                    `<ul style="list-style: none; padding: 0;">${blacklist.ips.map(ip => `<li style="margin-bottom: 5px;">${escapeHtml(ip)}</li>`).join('')}</ul>` : 
+                                    t('community.empty')
+                                }
                             </div>
                         </div>
                         <div class="status-card">
-                            <div class="card-title">${t('community.last_updated')}</div>
-                            <div class="card-content">${blacklist.last_updated}</div>
+                            <div class="card-title">${t('community.blacklist_fingerprints')}</div>
+                            <div class="card-content">
+                                ${blacklist.fingerprints.length > 0 ? 
+                                    `<ul style="list-style: none; padding: 0;">${blacklist.fingerprints.map(fp => `<li style="margin-bottom: 5px;">${escapeHtml(fp)}</li>`).join('')}</ul>` : 
+                                    t('community.empty')
+                                }
+                            </div>
+                        </div>
+                        <div class="status-card">
+                            <div class="card-title">${t('community.threat_intel')}</div>
+                            <div class="card-content">
+                                ${threats.threats.length > 0 ? 
+                                    `<ul style="list-style: none; padding: 0;">${threats.threats.map(threat => 
+                                        `<li style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(100, 255, 218, 0.2);">
+                                            <strong>${t('community.attack_type')}:</strong> ${escapeHtml(threat.attack_type)}<br>
+                                            <strong>${t('community.threat_level')}:</strong> ${escapeHtml(threat.threat_level)}<br>
+                                            <strong>${t('community.confidence')}:</strong> ${(threat.confidence * 100).toFixed(1)}%
+                                        </li>`
+                                    ).join('')}</ul>` : 
+                                    t('community.empty')
+                                }
+                            </div>
+                        </div>
+                        <div class="status-card">
+                            <div class="card-title">${t('community.sync_status')}</div>
+                            <div class="card-content">
+                                <strong>${t('community.last_sync')}:</strong> ${systemStatus.timestamp}<br>
+                                <strong>${t('community.community_intel_version')}:</strong> ${systemStatus.version || systemStatus.community_intel_version || 'v1.0.0'}
+                            </div>
                         </div>
                     `;
+                    
+                    // 更新标题和关闭按钮文本
+                    const modalTitle = document.getElementById('communityDetailsModalTitle');
+                    if (modalTitle) {
+                        modalTitle.textContent = t('community.details_title');
+                    }
+                    
+                    const closeButton = document.querySelector('#communityDetailsModal .btn-secondary');
+                    if (closeButton) {
+                        closeButton.textContent = t('button.close');
+                    }
+                    
+                    // 显示模态框并设置样式
+                    const modal = document.getElementById('communityDetailsModal');
+                    modal.style.display = 'flex';
+                    
+                    // 禁止背景页面滚动
+                    document.body.style.overflow = 'hidden';
                 })
                 .catch(error => {
-                    document.getElementById('community-status').innerHTML = `<div class="status-card danger"><div class="card-title">${t('error.loading')}</div><div class="card-content">${t('error.failed_to_get_community_status')}: ${error.message}</div></div>`;
+                    // 如果获取同步状态失败，仍然显示基本信息
+                    modalContent.innerHTML = `
+                        <div class="status-card">
+                            <div class="card-title">${t('community.blacklist_ips')}</div>
+                            <div class="card-content">
+                                ${blacklist.ips.length > 0 ? 
+                                    `<ul style="list-style: none; padding: 0;">${blacklist.ips.map(ip => `<li style="margin-bottom: 5px;">${escapeHtml(ip)}</li>`).join('')}</ul>` : 
+                                    t('community.empty')
+                                }
+                            </div>
+                        </div>
+                        <div class="status-card">
+                            <div class="card-title">${t('community.blacklist_fingerprints')}</div>
+                            <div class="card-content">
+                                ${blacklist.fingerprints.length > 0 ? 
+                                    `<ul style="list-style: none; padding: 0;">${blacklist.fingerprints.map(fp => `<li style="margin-bottom: 5px;">${escapeHtml(fp)}</li>`).join('')}</ul>` : 
+                                    t('community.empty')
+                                }
+                            </div>
+                        </div>
+                        <div class="status-card">
+                            <div class="card-title">${t('community.threat_intel')}</div>
+                            <div class="card-content">
+                                ${threats.threats.length > 0 ? 
+                                    `<ul style="list-style: none; padding: 0;">${threats.threats.map(threat => 
+                                        `<li style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(100, 255, 218, 0.2);">
+                                            <strong>${t('community.attack_type')}:</strong> ${escapeHtml(threat.attack_type)}<br>
+                                            <strong>${t('community.threat_level')}:</strong> ${escapeHtml(threat.threat_level)}<br>
+                                            <strong>${t('community.confidence')}:</strong> ${(threat.confidence * 100).toFixed(1)}%
+                                        </li>`
+                                    ).join('')}</ul>` : 
+                                    t('community.empty')
+                                }
+                            </div>
+                        </div>
+                    `;
+                    
+                    // 更新标题和关闭按钮文本
+                    const modalTitle = document.getElementById('communityDetailsModalTitle');
+                    if (modalTitle) {
+                        modalTitle.textContent = t('community.details_title');
+                    }
+                    
+                    const closeButton = document.querySelector('#communityDetailsModal .btn-secondary');
+                    if (closeButton) {
+                        closeButton.textContent = t('button.close');
+                    }
+                    
+                    // 显示模态框并设置样式
+                    const modal = document.getElementById('communityDetailsModal');
+                    modal.style.display = 'flex';
+                    
+                    // 禁止背景页面滚动
+                    document.body.style.overflow = 'hidden';
+                })
+                .catch(error => {
+                    console.error('获取系统状态失败:', error);
+                    modalContent.innerHTML = `<div class="status-card danger"><div class="card-title">${t('error.loading')}</div><div class="card-content">${t('error.failed_to_get_system_status')}: ${error.message}</div></div>`;
+                    
+                    // 更新标题和关闭按钮文本
+                    const modalTitle = document.getElementById('communityDetailsModalTitle');
+                    if (modalTitle) {
+                        modalTitle.textContent = t('community.details_title');
+                    }
+                    
+                    const closeButton = document.querySelector('#communityDetailsModal .btn-secondary');
+                    if (closeButton) {
+                        closeButton.textContent = t('button.close');
+                    }
+                    
+                    // 显示模态框并设置样式
+                    const modal = document.getElementById('communityDetailsModal');
+                    modal.style.display = 'flex';
+                    
+                    // 禁止背景页面滚动
+                    document.body.style.overflow = 'hidden';
                 });
+        }
+        
+        // 关闭社区联防详情模态框
+        function closeCommunityDetailsModal() {
+            const modal = document.getElementById('communityDetailsModal');
+            modal.style.display = 'none';
+            
+            // 恢复背景页面滚动
+            document.body.style.overflow = '';
         }
         
         // 获取威胁评估历史
@@ -3179,6 +3421,13 @@
             getHardwareStatus();
             refreshLanNodes();
             refreshTransfers();
+        }
+
+        // HTML转义函数，防止XSS攻击
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
     </script>
 </body>
