@@ -201,6 +201,19 @@ const i18n = {
         'community.ip_count': 'IP数量',
         'community.fingerprint_count': '指纹数量',
         'community.last_updated': '最后更新',
+        'community.view_details': '查看详情',
+        'community.hide_details': '隐藏详情',
+        'community.blacklist_ips': '黑名单IP',
+        'community.blacklist_fingerprints': '黑名单指纹',
+        'community.threat_intel': '威胁情报',
+        'community.attack_type': '攻击类型',
+        'community.threat_level': '威胁等级',
+        'community.confidence': '置信度',
+        'community.empty': '暂无数据',
+        'community.details_title': '社区联防详情',
+        'community.sync_status': '同步状态',
+        'community.last_sync': '最后同步',
+        'community.community_intel_version': '社区情报版本',
         
         // 威胁评估历史
         'assessment.no_history': '无评估历史',
@@ -331,7 +344,7 @@ const i18n = {
         'monitoring.TB': 'TB',
         
         // 页脚
-        'footer.copyright': '© 2026 MirageShield 团队 版权所有，侵权必究 - 版本 1.0.0',
+        'footer.copyright': '© 2026 MirageShield 团队 版权所有，侵权必究 - 版本 0.2.1',
         
         // 语言切换
         'language.zh': '中文',
@@ -375,7 +388,8 @@ const i18n = {
         
         // 退出相关
         'logout.button': '退出',
-        'logout.success': '退出登录成功'
+        'logout.success': '退出登录成功',
+        'button.close': '关闭'
     },
     
     // 英文
@@ -578,6 +592,19 @@ const i18n = {
         'community.ip_count': 'IP Count',
         'community.fingerprint_count': 'Fingerprint Count',
         'community.last_updated': 'Last Updated',
+        'community.view_details': 'View Details',
+        'community.hide_details': 'Hide Details',
+        'community.blacklist_ips': 'Blacklist IPs',
+        'community.blacklist_fingerprints': 'Blacklist Fingerprints',
+        'community.threat_intel': 'Threat Intelligence',
+        'community.attack_type': 'Attack Type',
+        'community.threat_level': 'Threat Level',
+        'community.confidence': 'Confidence',
+        'community.empty': 'No data',
+        'community.details_title': 'Community Defense Details',
+        'community.sync_status': 'Sync Status',
+        'community.last_sync': 'Last Sync',
+        'community.community_intel_version': 'Community Intel Version',
         
         // 威胁评估历史
         'assessment.no_history': 'No Assessment History',
@@ -707,7 +734,7 @@ const i18n = {
         'monitoring.TB': 'TB',
         
         // 页脚
-        'footer.copyright': '© 2026 MirageShield Team. All rights reserved. - Version 1.0.0',
+        'footer.copyright': '© 2026 MirageShield Team. All rights reserved. - Version 0.2.1',
         
         // 语言切换
         'language.zh': '中文',
@@ -751,7 +778,8 @@ const i18n = {
         
         // 退出相关
         'logout.button': 'Logout',
-        'logout.success': 'Logout successful'
+        'logout.success': 'Logout successful',
+        'button.close': 'Close'
     }
 };
 
