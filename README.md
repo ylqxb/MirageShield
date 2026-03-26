@@ -5,7 +5,7 @@
 [English](README.en.md) | [中文](README.md)
 
 © 2026 MirageShield 团队 版权所有
-本项目核心技术已申请发明专利（初审通过），开源版仅供学习、测试与非商业使用。
+本项目核心技术已申请发明专利，开源版仅供学习、测试与非商业使用。
 
 💡 使用本项目即视为您已阅读、理解并同意：
 • 版权声明与专利保护条款
@@ -256,8 +256,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### 附加条款
-
-本项目核心技术已申请发明专利（初审通过），开源版仅供学习、测试与非商业使用。商业使用需获得书面授权。
-
-如果这个项目对你有帮助，欢迎 Star ⭐
+### 如果这个项目对你有帮助，欢迎 Star ⭐
