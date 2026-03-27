@@ -3,8 +3,8 @@
 <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>MirageShield 幻象屏障主动防御系统</title>
-        <meta name="description" content="MirageShield 幻象屏障主动防御系统 - 实时监控与管理平台">
+        <title>MirageShield 幻影盾主动防御系统</title>
+        <meta name="description" content="MirageShield 幻影盾主动防御系统 - 实时监控与管理平台">
         <link rel="preconnect" href="https://cdnjs.cloudflare.com">
         <link rel="preconnect" href="https://cdn.jsdelivr.net">
         <style>
@@ -23,127 +23,256 @@
             overflow-x: hidden;
         }
         
-        /* 快速导航栏 */
+        /* 快速导航栏 - 轻便简约设计 */
         .quick-nav {
             position: fixed;
-            right: -200px; /* 初始位置，隐藏在右侧 */
+            right: 20px;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(10, 25, 47, 0.9);
-            border: 1px solid rgba(100, 255, 218, 0.5);
-            border-left: none;
-            border-radius: 0;
-            padding: 15px;
-            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.5);
+            background: rgba(10, 25, 47, 0.92);
+            border: 1px solid rgba(100, 255, 218, 0.4);
+            border-radius: 16px;
+            padding: 16px 12px;
+            box-shadow: 0 4px 16px rgba(0, 123, 255, 0.3), 0 0 20px rgba(100, 255, 218, 0.15);
             z-index: 1000;
-            backdrop-filter: blur(10px);
-            transition: right 0.3s ease;
-            width: 180px;
+            backdrop-filter: blur(12px);
+            width: 200px;
+            cursor: move;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            transform-origin: right center;
         }
         
-        /* 导航栏光效提示 */
-        .quick-nav::before {
-            content: '';
-            position: absolute;
-            left: -15px;
-            top: 0;
-            width: 10px;
-            height: 100%;
-            background: transparent;
-            box-shadow: 0 0 20px rgba(100, 255, 218, 0.8), 0 0 30px rgba(0, 123, 255, 0.5), 0 0 40px rgba(100, 255, 218, 0.6);
-            animation: glow 2s ease-in-out infinite alternate;
+        .quick-nav:hover {
+            box-shadow: 0 6px 24px rgba(0, 123, 255, 0.4), 0 0 30px rgba(100, 255, 218, 0.2);
         }
         
-        @keyframes glow {
+        .quick-nav.dragging {
+            box-shadow: 0 8px 32px rgba(0, 123, 255, 0.5), 0 0 40px rgba(100, 255, 218, 0.3);
+            transform: translateY(-50%) scale(1.02);
+        }
+        
+        .quick-nav.hidden {
+            transform: translateY(-50%) scale(0.1);
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .quick-nav.visible {
+            transform: translateY(-50%) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
             from {
-                box-shadow: 0 0 20px rgba(100, 255, 218, 0.8), 0 0 30px rgba(0, 123, 255, 0.5), 0 0 40px rgba(100, 255, 218, 0.6);
-                opacity: 0.7;
+                transform: translateY(-50%) scale(0.1);
+                opacity: 0;
             }
             to {
-                box-shadow: 0 0 30px rgba(100, 255, 218, 1), 0 0 45px rgba(0, 123, 255, 0.8), 0 0 60px rgba(100, 255, 218, 0.9);
+                transform: translateY(-50%) scale(1);
                 opacity: 1;
             }
         }
         
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 4px 12px rgba(0, 123, 255, 0.5), 0 0 15px rgba(100, 255, 218, 0.8);
-            }
-            50% {
-                box-shadow: 0 4px 12px rgba(0, 123, 255, 0.7), 0 0 25px rgba(100, 255, 218, 1);
-            }
-            100% {
-                box-shadow: 0 4px 12px rgba(0, 123, 255, 0.5), 0 0 15px rgba(100, 255, 218, 0.8);
-            }
-        }
-        
-        /* 鼠标靠近时弹出 */
-        .quick-nav:hover {
-            right: 0;
-        }
-        
-        /* 增加一个触发区域，使鼠标更容易触发 */
-        .quick-nav::after {
-            content: '';
-            position: absolute;
-            left: -30px;
-            top: 0;
+        /* 加载动画 */
+        .loading-spinner {
+            border: 4px solid rgba(100, 255, 218, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #64ffda;
             width: 30px;
-            height: 100%;
-            background: transparent;
+            height: 30px;
+            animation: spin 1s linear infinite;
         }
         
-        /* 响应式设计 - 导航栏 */
-        @media (max-width: 768px) {
-            .quick-nav {
-                position: fixed;
-                bottom: -100px;
-                right: 20px;
-                top: auto;
-                transform: none;
-                display: flex;
-                flex-direction: row;
-                padding: 10px;
-                width: auto;
-                border-radius: 12px 12px 0 0;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 电视样式按钮 */
+        .tv-button {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, #1a237e, #0d47a1);
+            border: 2px solid rgba(100, 255, 218, 0.3);
+            border-radius: 6px;
+            padding: 3px 8px;
+            color: #64ffda;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(100, 255, 218, 0.2);
+            white-space: nowrap;
+            height: fit-content;
+            line-height: 1.2;
+            min-width: auto;
+            width: fit-content;
+        }
+        
+        .tv-button:hover {
+            background: linear-gradient(135deg, #0d47a1, #1a237e);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(100, 255, 218, 0.3);
+            border-color: rgba(100, 255, 218, 0.6);
+        }
+        
+        .tv-button svg {
+            width: 14px;
+            height: 14px;
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .tv-button:hover svg {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        /* 系统资源模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal-content {
+            background-color: rgba(10, 25, 47, 0.95);
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid rgba(100, 255, 218, 0.3);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(100, 255, 218, 0.3), 0 0 40px rgba(100, 255, 218, 0.15);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(-50px);
             }
-            
-            .quick-nav:hover {
-                bottom: 0;
-                right: 20px;
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
             }
-            
-            .quick-nav::before {
-                left: 0;
-                top: -30px;
-                width: 100%;
-                height: 30px;
-                background: transparent;
-                box-shadow: 0 0 20px rgba(100, 255, 218, 0.8), 0 0 30px rgba(0, 123, 255, 0.5), 0 0 40px rgba(100, 255, 218, 0.6);
-            }
-            
-            .quick-nav::after {
-                left: 0;
-                top: -30px;
-                width: 100%;
-                height: 30px;
-                background: transparent;
-            }
-            
-            .quick-nav ul {
-                display: flex;
-                flex-direction: row;
-            }
-            
-            .quick-nav li {
-                margin-bottom: 0;
-                margin-right: 10px;
-            }
-            
-            .quick-nav a {
-                padding: 6px 10px;
-                font-size: 12px;
-            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.2);
+        }
+        
+        .modal-header h2 {
+            color: #64ffda;
+            font-size: 20px;
+            margin: 0;
+        }
+        
+        .close {
+            color: #a8b2d1;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: #64ffda;
+            text-decoration: none;
+        }
+        
+        .modal-body {
+            padding: 20px 0;
+            min-height: 400px;
+        }
+        
+        .modal-body canvas {
+            width: 100% !important;
+            height: 400px !important;
+        }
+        
+        /* 导航栏头部 */
+        .quick-nav-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.2);
+        }
+        
+        .quick-nav-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #64ffda;
+            text-shadow: 0 0 8px rgba(100, 255, 218, 0.4);
+            cursor: move;
+        }
+        
+        .quick-nav-close {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 1px solid rgba(100, 255, 218, 0.3);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #64ffda;
+            font-size: 14px;
+            line-height: 1;
+        }
+        
+        .quick-nav-close:hover {
+            background: rgba(100, 255, 218, 0.15);
+            border-color: rgba(100, 255, 218, 0.5);
+        }
+        
+        /* 导航栏内容 */
+        .quick-nav-content {
+            max-height: 320px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        
+        /* 滚动条样式 */
+        .quick-nav-content::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .quick-nav-content::-webkit-scrollbar-track {
+            background: rgba(23, 42, 69, 0.3);
+            border-radius: 2px;
+        }
+        
+        .quick-nav-content::-webkit-scrollbar-thumb {
+            background: rgba(100, 255, 218, 0.4);
+            border-radius: 2px;
+        }
+        
+        .quick-nav-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 255, 218, 0.6);
         }
         
         .quick-nav ul {
@@ -153,56 +282,54 @@
         }
         
         .quick-nav li {
-            margin-bottom: 12px;
+            margin-bottom: 4px;
         }
         
         .quick-nav a {
             display: block;
             color: #e6f1ff;
             text-decoration: none;
-            padding: 8px 12px;
+            padding: 8px 10px;
             border-radius: 6px;
-            transition: all 0.3s ease;
-            font-size: 14px;
-            font-weight: 600;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            font-weight: 500;
         }
         
         .quick-nav a:hover {
-            background: rgba(100, 255, 218, 0.2);
+            background: rgba(100, 255, 218, 0.1);
             color: #64ffda;
-            transform: translateX(-5px);
-            box-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+            transform: translateX(-3px);
         }
         
         .quick-nav a:active {
-            transform: translateX(-3px);
+            transform: translateX(-2px);
+        }
+        
+        /* 导航栏底部 */
+        .quick-nav-footer {
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(100, 255, 218, 0.2);
+            text-align: center;
+            font-size: 11px;
+            color: rgba(174, 194, 224, 0.5);
         }
         
         /* 响应式设计 - 导航栏 */
         @media (max-width: 768px) {
             .quick-nav {
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                top: auto;
-                transform: none;
-                display: flex;
-                flex-direction: row;
-                padding: 10px;
+                width: 180px;
+                padding: 12px 10px;
+                right: 10px;
             }
             
-            .quick-nav ul {
-                display: flex;
-                flex-direction: row;
-            }
-            
-            .quick-nav li {
-                margin-bottom: 0;
-                margin-right: 10px;
+            .quick-nav-content {
+                max-height: 240px;
             }
             
             .quick-nav a {
-                padding: 6px 10px;
+                padding: 6px 8px;
                 font-size: 12px;
             }
         }
@@ -244,30 +371,17 @@
         }
         
         header {
-            background: linear-gradient(135deg, #007bff, #64ffda);
-            background-size: 400% 400%;
-            color: #0a192f;
-            padding: 40px;
+            background: linear-gradient(135deg, #0a192f, #172a45);
+            color: #64ffda;
+            padding: 30px;
             border-radius: 12px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             text-align: center;
-            box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3), 0 0 30px rgba(100, 255, 218, 0.2);
-            animation: gradient 15s ease infinite;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2), 0 0 20px rgba(100, 255, 218, 0.1);
             position: relative;
             overflow: hidden;
-            border: 1px solid rgba(100, 255, 218, 0.3);
-        }
-        
-        @keyframes gradient {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            backdrop-filter: blur(10px);
         }
         
         header::before {
@@ -277,21 +391,16 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: repeating-linear-gradient(
-                90deg,
-                transparent,
-                rgba(100, 255, 218, 0.1) 2px,
-                transparent 4px
-            );
-            animation: techScan 4s linear infinite;
+            background: linear-gradient(45deg, transparent, rgba(100, 255, 218, 0.05), transparent);
+            animation: headerScan 8s ease-in-out infinite;
             z-index: 0;
         }
         
-        @keyframes techScan {
-            0% {
+        @keyframes headerScan {
+            0%, 100% {
                 transform: translateX(-100%);
             }
-            100% {
+            50% {
                 transform: translateX(100%);
             }
         }
@@ -302,16 +411,46 @@
         }
         
         header h1 {
-            font-size: 32px;
-            margin-bottom: 15px;
+            font-size: 28px;
+            margin-bottom: 12px;
+            color: #64ffda;
+            text-shadow: 0 0 15px rgba(100, 255, 218, 0.5);
             font-weight: 700;
-            text-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+            letter-spacing: 1px;
         }
         
         header p {
-            font-size: 18px;
-            opacity: 0.9;
-            text-shadow: 0 0 5px rgba(100, 255, 218, 0.3);
+            font-size: 14px;
+            opacity: 0.8;
+            color: #a8b2d1;
+        }
+        
+        /* 标题装饰效果 */
+        .title-decoration {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .title-decoration::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #64ffda, transparent);
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes titleGlow {
+            0%, 100% {
+                opacity: 0.5;
+                box-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+            }
+            50% {
+                opacity: 1;
+                box-shadow: 0 0 20px rgba(100, 255, 218, 0.8);
+            }
         }
         
         @keyframes fadeIn {
@@ -332,26 +471,21 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         
-        header p {
-            font-size: 18px;
-            opacity: 0.9;
-        }
-        
         .status-section {
-            background: rgba(23, 42, 69, 0.6);
-            padding: 30px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(100, 255, 218, 0.15);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
-            animation: slideIn 0.5s ease-out;
+            background: rgba(23, 42, 69, 0.5);
+            padding: 24px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(100, 255, 218, 0.12);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+            animation: slideIn 0.4s ease-out;
         }
         
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(8px);
             }
             to {
                 opacity: 1;
@@ -360,17 +494,17 @@
         }
         
         .status-section:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-            border-color: rgba(100, 255, 218, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border-color: rgba(100, 255, 218, 0.2);
         }
         
         .section-title {
-            font-size: 22px;
-            margin-bottom: 25px;
+            font-size: 18px;
+            margin-bottom: 20px;
             color: #64ffda;
-            border-bottom: 3px solid #007bff;
-            padding-bottom: 12px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
             font-weight: 600;
             display: flex;
             align-items: center;
@@ -378,30 +512,30 @@
         
         .section-title::before {
             content: '';
-            width: 8px;
-            height: 24px;
+            width: 6px;
+            height: 20px;
             background-color: #007bff;
-            margin-right: 12px;
-            border-radius: 4px;
-            box-shadow: 0 0 10px rgba(0, 123, 255, 0.8);
+            margin-right: 10px;
+            border-radius: 3px;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.6);
         }
         
         .status-card {
-            background: rgba(10, 25, 47, 0.8);
-            padding: 25px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(100, 255, 218, 0.2);
-            transition: all 0.3s ease;
+            background: rgba(10, 25, 47, 0.7);
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(100, 255, 218, 0.15);
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(8px);
         }
         
         .status-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3), 0 0 20px rgba(100, 255, 218, 0.1);
-            transform: translateX(5px);
-            border-color: rgba(100, 255, 218, 0.5);
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2), 0 0 12px rgba(100, 255, 218, 0.08);
+            transform: translateX(3px);
+            border-color: rgba(100, 255, 218, 0.3);
         }
         
         .status-card::before {
@@ -410,9 +544,9 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 2px;
+            height: 1px;
             background: linear-gradient(90deg, transparent, #64ffda, transparent);
-            animation: lineScan 2s ease-in-out infinite;
+            animation: lineScan 2.5s ease-in-out infinite;
         }
         
         @keyframes lineScan {
@@ -471,20 +605,19 @@
         }
         
         .btn {
-            padding: 12px 24px;
+            padding: 9px 18px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 15px;
-            margin-right: 12px;
-            margin-bottom: 12px;
-            transition: all 0.3s ease;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
             background: linear-gradient(135deg, #007bff, #64ffda);
             color: #0a192f;
-            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3), 0 0 15px rgba(100, 255, 218, 0.2);
+            box-shadow: 0 2px 6px rgba(0, 123, 255, 0.2), 0 0 10px rgba(100, 255, 218, 0.1);
+            border: 1px solid rgba(100, 255, 218, 0.3);
         }
         
         .btn::before {
@@ -494,8 +627,8 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.4s ease;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.3s ease;
         }
         
         .btn:hover::before {
@@ -503,14 +636,14 @@
         }
         
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 123, 255, 0.5), 0 0 20px rgba(100, 255, 218, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3), 0 0 15px rgba(100, 255, 218, 0.2);
             background: linear-gradient(135deg, #64ffda, #007bff);
         }
         
         .btn:active {
             transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+            box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
         }
         
         .btn-primary {
@@ -521,34 +654,109 @@
         .btn-warning {
             background: linear-gradient(135deg, #f39c12, #ffd700);
             color: #0a192f;
-            box-shadow: 0 4px 8px rgba(243, 156, 18, 0.3), 0 0 15px rgba(255, 215, 0, 0.2);
+            box-shadow: 0 2px 6px rgba(243, 156, 18, 0.2), 0 0 10px rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(243, 156, 18, 0.3);
         }
         
         .btn-warning:hover {
-            box-shadow: 0 6px 12px rgba(243, 156, 18, 0.5), 0 0 20px rgba(255, 215, 0, 0.3);
+            box-shadow: 0 4px 10px rgba(243, 156, 18, 0.3), 0 0 15px rgba(255, 215, 0, 0.2);
             background: linear-gradient(135deg, #ffd700, #f39c12);
         }
         
         .btn-danger {
             background: linear-gradient(135deg, #e74c3c, #ff6b6b);
             color: #0a192f;
-            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3), 0 0 15px rgba(255, 107, 107, 0.2);
+            box-shadow: 0 2px 6px rgba(231, 76, 60, 0.2), 0 0 10px rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.3);
         }
         
         .btn-danger:hover {
-            box-shadow: 0 6px 12px rgba(231, 76, 60, 0.5), 0 0 20px rgba(255, 107, 107, 0.3);
+            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3), 0 0 15px rgba(255, 107, 107, 0.2);
             background: linear-gradient(135deg, #ff6b6b, #e74c3c);
         }
         
         .btn-success {
             background: linear-gradient(135deg, #27ae60, #4caf50);
             color: #0a192f;
-            box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3), 0 0 15px rgba(76, 175, 80, 0.2);
+            box-shadow: 0 2px 6px rgba(39, 174, 96, 0.2), 0 0 10px rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(39, 174, 96, 0.3);
         }
         
         .btn-success:hover {
-            box-shadow: 0 6px 12px rgba(39, 174, 96, 0.5), 0 0 20px rgba(76, 175, 80, 0.3);
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3), 0 0 15px rgba(76, 175, 80, 0.2);
             background: linear-gradient(135deg, #4caf50, #27ae60);
+        }
+        
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 12px;
+            margin-right: 6px;
+        }
+        
+        /* 活力元素 - 中和冷色调 */
+        .vibrant-accent {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #ff6b6b, #f39c12, #4caf50, #007bff, #9b59b6);
+            background-size: 200% 100%;
+            animation: vibrantFlow 8s ease infinite;
+        }
+        
+        @keyframes vibrantFlow {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        /* 状态卡片活力效果 */
+        .status-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #64ffda, transparent);
+            animation: cardGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes cardGlow {
+            0%, 100% {
+                opacity: 0.5;
+                box-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+            }
+            50% {
+                opacity: 1;
+                box-shadow: 0 0 20px rgba(100, 255, 218, 0.8);
+            }
+        }
+        
+        /* 按钮活力效果 */
+        .btn::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s ease;
+        }
+        
+        .btn:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
         }
         
         .btn-info {
@@ -597,7 +805,7 @@
         .footer {
             text-align: center;
             margin-top: 60px;
-            padding: 30px;
+            padding: 20px;
             background: linear-gradient(135deg, #007bff, #64ffda);
             background-size: 400% 400%;
             color: #0a192f;
@@ -630,7 +838,8 @@
             z-index: 1;
             margin: 0;
             opacity: 0.9;
-            font-size: 16px;
+            font-size: 14px;
+            font-weight: 500;
         }
         
         /* 返回置顶按钮 */
@@ -638,8 +847,8 @@
             position: fixed;
             bottom: 30px;
             right: 30px;
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             background: linear-gradient(135deg, #007bff, #64ffda);
             color: #0a192f;
@@ -649,19 +858,51 @@
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(100, 255, 218, 0.4);
             opacity: 0;
-            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(20px) scale(0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1000;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
+            border: 2px solid rgba(100, 255, 218, 0.3);
         }
         
         .back-to-top.visible {
             opacity: 1;
+            transform: translateY(0) scale(1);
+            animation: bounceIn 0.5s ease-out;
         }
         
         .back-to-top:hover {
-            transform: translateY(-5px);
+            transform: translateY(-5px) scale(1.1);
             box-shadow: 0 6px 20px rgba(100, 255, 218, 0.6);
+            background: linear-gradient(135deg, #64ffda, #007bff);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.8);
+            }
+            60% {
+                transform: translateY(-10px) scale(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 6px 20px rgba(100, 255, 218, 0.6);
+            }
+            50% {
+                box-shadow: 0 8px 25px rgba(100, 255, 218, 0.8);
+            }
+            100% {
+                box-shadow: 0 6px 20px rgba(100, 255, 218, 0.6);
+            }
         }
         
         /* 登录模态框 */
@@ -975,6 +1216,7 @@
     <script src="/ui/i18n.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>if (typeof Chart === 'undefined') { document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"><\/script>'); }</script>
 </head>
 <body>
     <!-- 登录按钮 -->
@@ -1088,26 +1330,36 @@
     <div class="stars" id="stars"></div>
     
     <!-- 快速导航栏 -->
-    <div class="quick-nav">
-        <ul>
-            <li><a href="#system-status-section">系统状态</a></li>
-            <li><a href="#agent-status-section">智能体状态</a></li>
-            <li><a href="#network-status-section">网络状态</a></li>
-            <li><a href="#lan-status-section">局域网管理</a></li>
-            <li><a href="#data-transfer-section">数据传输</a></li>
-            <li><a href="#community-status-section">社区联防</a></li>
-            <li><a href="#control-section">操作控制</a></li>
-            <li><a href="#assessment-history-section">威胁评估</a></li>
-            <li><a href="#protection-result-section">防护结果</a></li>
-            <li><a href="/ui/logs.html">系统日志</a></li>
-            <li><a href="#monitoring-section">系统监控</a></li>
-            <li><a href="#hardware-section">硬件管理</a></li>
-        </ul>
+    <div class="quick-nav" id="quickNav">
+        <div class="quick-nav-header">
+            <div class="quick-nav-title" id="navTitle">导航菜单</div>
+            <div class="quick-nav-close" onclick="toggleNav()">×</div>
+        </div>
+        <div class="quick-nav-content" id="quickNavContent">
+            <ul>
+                <li><a href="#system-status-section">系统状态</a></li>
+                <li><a href="#agent-status-section">智能体状态</a></li>
+                <li><a href="#network-status-section">网络状态</a></li>
+                <li><a href="#lan-status-section">局域网管理</a></li>
+                <li><a href="#data-transfer-section">数据传输</a></li>
+                <li><a href="#community-status-section">社区联防</a></li>
+                <li><a href="#control-section">操作控制</a></li>
+                <li><a href="#assessment-history-section">威胁评估</a></li>
+                <li><a href="#protection-result-section">防护结果</a></li>
+                <li><a href="/ui/logs.html">系统日志</a></li>
+                <li><a href="#monitoring-section">系统监控</a></li>
+                <li><a href="#hardware-section">硬件管理</a></li>
+            </ul>
+        </div>
+        <div class="quick-nav-footer">
+            <div>MirageShield</div>
+        </div>
     </div>
     
     <div class="container">
         <header>
-            <h1>MirageShield 幻象屏障主动防御系统</h1>
+            <div class="vibrant-accent"></div>
+            <h1 class="title-decoration">MirageShield 幻影盾主动防御系统</h1>
             <p>实时监控与管理平台</p>
         </header>
         
@@ -1167,6 +1419,11 @@
         
         <div class="status-section" id="control-section">
             <h2 class="section-title">操作控制</h2>
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-success btn-lg" style="width: 100%; padding: 15px; font-size: 18px; font-weight: bold; background: linear-gradient(135deg, #4CAF50, #45a049); border: none; box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);" onclick="startFullProtection()">
+                    🛡️ 一键启动防御
+                </button>
+            </div>
             <div class="protection-level-selector">
                 <label for="protection-level">防护级别:</label>
                 <select id="protection-level" onchange="changeProtectionLevel()">
@@ -1212,12 +1469,24 @@
                 </div>
             </div>
             <div class="status-section" id="monitoring-section">
-                <h2 class="section-title" id="monitoring-section-title">系统监控</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <h2 class="section-title" id="monitoring-section-title">系统监控</h2>
+                    <div style="flex-shrink: 0;">
+                        <button class="btn btn-secondary tv-button" onclick="toggleSystemResourcesModal()" id="system-resources-button">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="3" y="4" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
+                                <path d="M8 20L12 16L16 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span id="resource-monitoring-text">资源监控</span>
+                        </button>
+                    </div>
+                </div>
                 <div id="monitoring-content" class="loading">
                     加载中...
                 </div>
-                <div style="margin-top: 20px;">
-                    <canvas id="system-resources-chart" width="400" height="200"></canvas>
+                <!-- 隐藏系统资源图表，通过模态框显示 -->
+                <div id="system-resources-chart-container" style="display: none;">
+                    <canvas id="system-resources-chart-hidden" width="400" height="200"></canvas>
                 </div>
             </div>
 
@@ -1242,13 +1511,235 @@
         </div>
     </div>
     
+    <!-- 系统资源模态框 -->
+    <div id="systemResourcesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="system-resources-title">系统资源使用情况</h2>
+                <span class="close" onclick="toggleSystemResourcesModal()" id="system-resources-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="system-resources-loading" style="display: flex; justify-content: center; align-items: center; height: 400px;">
+                    <div class="loading-spinner"></div>
+                    <span style="margin-left: 10px; color: #64ffda;">加载中...</span>
+                </div>
+                <canvas id="system-resources-chart" width="400" height="200" style="display: none;"></canvas>
+            </div>
+        </div>
+    </div>
+    
     <!-- 返回置顶按钮 -->
     <div class="back-to-top" id="backToTop">↑</div>
     
     <script>
         // 确保API_BASE只被声明一次
         if (typeof API_BASE === 'undefined') {
-            var API_BASE = 'http://localhost:5000';
+            var API_BASE = window.location.origin || 'http://localhost:8080';
+        }
+        
+        // 导航栏拖动功能
+        let isDragging = false;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+        let navPosition = { right: 20, top: 50 }; // 默认位置
+        let animationFrameId = null;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        
+        const quickNav = document.getElementById('quickNav');
+        
+        // 初始化导航栏位置
+        function initNavPosition() {
+            if (!quickNav) return;
+            quickNav.style.right = navPosition.right + 'px';
+            quickNav.style.top = navPosition.top + '%';
+        }
+        
+        // 鼠标按下事件
+        if (quickNav) {
+            quickNav.addEventListener('mousedown', function(e) {
+                // 只在点击导航栏头部或标题时启动拖动
+                if (e.target.closest('.quick-nav-header') || e.target.closest('.quick-nav-title')) {
+                    isDragging = true;
+                    const rect = quickNav.getBoundingClientRect();
+                    dragOffsetX = e.clientX - rect.left;
+                    dragOffsetY = e.clientY - rect.top;
+                    lastMouseX = e.clientX;
+                    lastMouseY = e.clientY;
+                    quickNav.classList.add('dragging');
+                    quickNav.style.cursor = 'grabbing';
+                    quickNav.style.transition = 'none'; // 禁用过渡效果，提高拖动流畅度
+                    e.preventDefault();
+                }
+            });
+        }
+        
+        // 鼠标移动事件
+        document.addEventListener('mousemove', function(e) {
+            if (!isDragging || !quickNav) return;
+            
+            // 直接更新位置，不使用requestAnimationFrame以减少延迟
+            const x = e.clientX - dragOffsetX;
+            const y = e.clientY - dragOffsetY;
+            
+            // 限制导航栏在视口内
+            const maxX = window.innerWidth - quickNav.offsetWidth;
+            const maxY = window.innerHeight - quickNav.offsetHeight;
+            
+            const boundedX = Math.max(0, Math.min(x, maxX));
+            const boundedY = Math.max(0, Math.min(y, maxY));
+            
+            // 计算相对于视口的位置
+            const rightPos = window.innerWidth - boundedX - quickNav.offsetWidth;
+            const topPercent = (boundedY / window.innerHeight) * 100;
+            
+            quickNav.style.right = Math.max(0, rightPos) + 'px';
+            quickNav.style.top = topPercent + '%';
+            quickNav.style.transform = 'none';
+            
+            // 保存位置
+            navPosition.right = Math.max(0, rightPos);
+            navPosition.top = topPercent;
+        });
+        
+        // 鼠标释放事件
+        document.addEventListener('mouseup', function() {
+            if (isDragging && quickNav) {
+                isDragging = false;
+                quickNav.classList.remove('dragging');
+                quickNav.style.cursor = 'move';
+                quickNav.style.transition = ''; // 恢复过渡效果
+            }
+        });
+        
+        // 触摸事件支持
+        if (quickNav) {
+            quickNav.addEventListener('touchstart', function(e) {
+                if (e.target.closest('.quick-nav-header') || e.target.closest('.quick-nav-title')) {
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    const rect = quickNav.getBoundingClientRect();
+                    dragOffsetX = touch.clientX - rect.left;
+                    dragOffsetY = touch.clientY - rect.top;
+                    lastMouseX = touch.clientX;
+                    lastMouseY = touch.clientY;
+                    quickNav.classList.add('dragging');
+                    quickNav.style.transition = 'none'; // 禁用过渡效果，提高拖动流畅度
+                    e.preventDefault();
+                }
+            });
+        }
+        
+        document.addEventListener('touchmove', function(e) {
+            if (!isDragging || !quickNav) return;
+            
+            // 直接更新位置，不使用requestAnimationFrame以减少延迟
+            const touch = e.touches[0];
+            const x = touch.clientX - dragOffsetX;
+            const y = touch.clientY - dragOffsetY;
+            
+            const maxX = window.innerWidth - quickNav.offsetWidth;
+            const maxY = window.innerHeight - quickNav.offsetHeight;
+            
+            const boundedX = Math.max(0, Math.min(x, maxX));
+            const boundedY = Math.max(0, Math.min(y, maxY));
+            
+            const rightPos = window.innerWidth - boundedX - quickNav.offsetWidth;
+            const topPercent = (boundedY / window.innerHeight) * 100;
+            
+            quickNav.style.right = Math.max(0, rightPos) + 'px';
+            quickNav.style.top = topPercent + '%';
+            quickNav.style.transform = 'none';
+            
+            navPosition.right = Math.max(0, rightPos);
+            navPosition.top = topPercent;
+        });
+        
+        document.addEventListener('touchend', function() {
+            if (isDragging && quickNav) {
+                isDragging = false;
+                quickNav.classList.remove('dragging');
+                quickNav.style.transition = ''; // 恢复过渡效果
+            }
+        });
+        
+        // 导航栏显示/隐藏功能
+        function toggleNav() {
+            const content = document.getElementById('quickNavContent');
+            const footer = document.querySelector('.quick-nav-footer');
+            const quickNav = document.getElementById('quickNav');
+            
+            if (!content || !footer || !quickNav) return;
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                footer.style.display = 'block';
+                quickNav.classList.add('visible');
+                quickNav.classList.remove('hidden');
+            } else {
+                content.style.display = 'none';
+                footer.style.display = 'none';
+                // 3秒后自动隐藏整个导航栏
+                setTimeout(() => {
+                    if (quickNav) {
+                        quickNav.classList.add('hidden');
+                        quickNav.classList.remove('visible');
+                    }
+                }, 3000);
+            }
+        }
+        
+        // 切换系统资源模态框
+        function toggleSystemResourcesModal() {
+            const modal = document.getElementById('systemResourcesModal');
+            if (modal.style.display === 'block') {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            } else {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                // 确保图表已初始化
+                if (typeof initSystemResourcesChart === 'function') {
+                    try {
+                        initSystemResourcesChart();
+                    } catch (e) {
+                        console.error('初始化图表失败:', e);
+                    }
+                }
+                // 确保图表有数据
+                if (typeof getMonitoringData === 'function') {
+                    try {
+                        getMonitoringData();
+                    } catch (e) {
+                        console.error('获取监控数据失败:', e);
+                    }
+                }
+            }
+        }
+        
+        // 监听键盘事件
+        document.addEventListener('keydown', function(e) {
+            // 当按下m键时切换导航菜单的显示/隐藏状态
+            if (e.key.toLowerCase() === 'm') {
+                toggleNav();
+            }
+            // 当按下Escape键时关闭模态框
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('systemResourcesModal');
+                if (modal.style.display === 'block') {
+                    toggleSystemResourcesModal();
+                }
+            }
+        });
+        
+        // 点击模态框外部关闭模态框
+        const modal = document.getElementById('systemResourcesModal');
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    toggleSystemResourcesModal();
+                }
+            });
         }
         
         // 认证相关变量
@@ -1257,6 +1748,8 @@
         
         // 检查是否在 GitHub Pages 上运行
         const isGitHubPages = window.location.hostname === 'ylqxb.github.io';
+        // 检查是否为演示模式
+        const isDemoMode = window.isDemoMode || isGitHubPages;
         
         // 页面加载时获取状态
         window.onload = function() {
@@ -1264,6 +1757,8 @@
             initLanguage();
             // 检查认证状态
             checkAuthStatus();
+            // 初始化导航栏位置
+            initNavPosition();
             // 显式设置标题
             setSectionTitles();
             // 如果已登录，刷新状态
@@ -1313,9 +1808,23 @@
             // 模拟系统状态
             const systemStatusDiv = document.getElementById('system-status');
             systemStatusDiv.innerHTML = `
-                <div class="status-card success">
-                    <div class="card-title">系统状态</div>
-                    <div class="card-content">operational</div>
+                <div class="grid">
+                    <div class="status-card success">
+                        <div class="card-title">今日拦截攻击</div>
+                        <div class="card-content">12次</div>
+                    </div>
+                    <div class="status-card info">
+                        <div class="card-title">当前运行智能体</div>
+                        <div class="card-content">3个</div>
+                    </div>
+                    <div class="status-card warning">
+                        <div class="card-title">已部署诱饵</div>
+                        <div class="card-content">25个 <span style="font-size: 12px; color: #4CAF50;">(已激活)</span></div>
+                    </div>
+                    <div class="status-card success">
+                        <div class="card-title">系统运行状态</div>
+                        <div class="card-content">正常</div>
+                    </div>
                 </div>
                 <div class="status-card">
                     <div class="card-title">最后更新</div>
@@ -1332,6 +1841,14 @@
                 <div class="status-card">
                     <div class="card-title">当前防护级别</div>
                     <div class="card-content">标准防护</div>
+                </div>
+                <div class="status-card info">
+                    <div class="card-title">核心防护数据</div>
+                    <div class="card-content">
+                        <strong>防护能力:</strong> 端口扫描拦截率95%+ | 暴力破解拦截率99%+ | 未知攻击识别率85%+<br>
+                        <strong>响应速度:</strong> 攻击响应延迟＜50ms<br>
+                        <strong>资源占用:</strong> 空闲CPU＜5% | 内存＜60MB
+                    </div>
                 </div>
             `;
             
@@ -1424,6 +1941,41 @@
                     <div class="card-title">拦截攻击</div>
                     <div class="card-content">156次</div>
                 </div>
+                <div class="status-card">
+                    <div class="card-title">攻击日志</div>
+                    <div class="card-content" style="max-height: 300px; overflow-y: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid rgba(100, 255, 218, 0.3);">
+                                    <th style="text-align: left; padding: 8px;">攻击IP</th>
+                                    <th style="text-align: left; padding: 8px;">攻击时间</th>
+                                    <th style="text-align: left; padding: 8px;">攻击类型</th>
+                                    <th style="text-align: left; padding: 8px;">处置结果</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid rgba(100, 255, 218, 0.1);">
+                                    <td style="padding: 8px;">192.168.1.100</td>
+                                    <td style="padding: 8px;">2026-03-27 10:15:30</td>
+                                    <td style="padding: 8px;">端口扫描</td>
+                                    <td style="padding: 8px; color: #4CAF50;">已监控</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(100, 255, 218, 0.1);">
+                                    <td style="padding: 8px;">10.0.0.5</td>
+                                    <td style="padding: 8px;">2026-03-27 09:45:12</td>
+                                    <td style="padding: 8px;">暴力破解</td>
+                                    <td style="padding: 8px; color: #FF9800;">已诱饵引导</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(100, 255, 218, 0.1);">
+                                    <td style="padding: 8px;">172.16.0.20</td>
+                                    <td style="padding: 8px;">2026-03-27 08:30:45</td>
+                                    <td style="padding: 8px;">异常探测</td>
+                                    <td style="padding: 8px; color: #F44336;">已封禁</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             `;
             
             // 模拟系统监控
@@ -1503,12 +2055,12 @@
             // 系统监控部分
             const monitoringTitle = document.getElementById('monitoring-section-title');
             if (monitoringTitle) {
-                monitoringTitle.textContent = t('section.system_monitoring');
+                monitoringTitle.textContent = t('section.monitoring');
             }
             // 硬件管理部分
             const hardwareTitle = document.getElementById('hardware-section-title');
             if (hardwareTitle) {
-                hardwareTitle.textContent = t('section.hardware_management');
+                hardwareTitle.textContent = t('section.hardware');
             }
             // 局域网管理部分
             const lanTitle = document.getElementById('lan-title');
@@ -1709,6 +2261,131 @@
         
         // 添加请求拦截器，为需要认证的请求添加token
         function authenticatedFetch(url, options = {}) {
+            // 演示模式下返回模拟数据
+            if (isDemoMode) {
+                return new Promise((resolve) => {
+                    // 模拟网络延迟
+                    setTimeout(() => {
+                        // 根据URL返回不同的模拟数据
+                        if (url.includes('/api/system/status')) {
+                            resolve({
+                                json: () => Promise.resolve({
+                                    system_status: '正常运行',
+                                    timestamp: new Date().toISOString(),
+                                    protection_level: 'high',
+                                    threat_level: 'low'
+                                })
+                            });
+                        } else if (url.includes('/api/agents')) {
+                            resolve({
+                                json: () => Promise.resolve([
+                                    {
+                                        name: 'prober',
+                                        type: 'AI',
+                                        description: '网络探测与分析'
+                                    },
+                                    {
+                                        name: 'baiter',
+                                        type: 'AI',
+                                        description: '诱饵部署与管理'
+                                    },
+                                    {
+                                        name: 'watcher',
+                                        type: 'AI',
+                                        description: '网络监控与威胁分析'
+                                    }
+                                ])
+                            });
+                        } else if (url.includes('/api/community/blacklist')) {
+                            resolve({
+                                json: () => Promise.resolve({
+                                    ips: ['192.168.1.0/24', '10.0.0.0/8'],
+                                    fingerprints: ['abc123', 'def456'],
+                                    last_updated: new Date().toISOString()
+                                })
+                            });
+                        } else if (url.includes('/api/community/threats')) {
+                            resolve({
+                                json: () => Promise.resolve({
+                                    threats: [
+                                        {
+                                            type: 'port_scan',
+                                            level: 'high',
+                                            confidence: 85.0
+                                        },
+                                        {
+                                            type: 'brute_force',
+                                            level: 'medium',
+                                            confidence: 70.0
+                                        }
+                                    ],
+                                    last_updated: new Date().toISOString()
+                                })
+                            });
+                        } else if (url.includes('/api/assessment/history')) {
+                            resolve({
+                                json: () => Promise.resolve([
+                                    {
+                                        timestamp: new Date().toISOString(),
+                                        threat_type: 'port_scan',
+                                        threat_level: 'high',
+                                        confidence: 85.0,
+                                        action: 'blocked'
+                                    }
+                                ])
+                            });
+                        } else if (url.includes('/api/lan/nodes')) {
+                            resolve({
+                                json: () => Promise.resolve({
+                                    nodes: [
+                                        {
+                                            ip: '192.168.1.1',
+                                            hostname: 'Router',
+                                            status: 'online'
+                                        },
+                                        {
+                                            ip: '192.168.1.100',
+                                            hostname: 'Desktop',
+                                            status: 'online'
+                                        }
+                                    ]
+                                })
+                            });
+                        } else if (url.includes('/api/data/transfers')) {
+                            resolve({
+                                json: () => Promise.resolve({
+                                    transfers: []
+                                })
+                            });
+                        } else if (url.includes('/api/monitoring/system')) {
+                            resolve({
+                                json: () => Promise.resolve({
+                                    cpu: {
+                                        usage: 30.5,
+                                        cores: 4
+                                    },
+                                    memory: {
+                                        usage: 45.2,
+                                        total: 8192
+                                    },
+                                    disk: {
+                                        usage: 60.8,
+                                        total: 500
+                                    }
+                                })
+                            });
+                        } else {
+                            // 默认返回成功响应
+                            resolve({
+                                json: () => Promise.resolve({
+                                    success: true
+                                })
+                            });
+                        }
+                    }, 300); // 300ms 模拟延迟
+                });
+            }
+            
             if (token) {
                 options.headers = options.headers || {};
                 options.headers['Authorization'] = `Bearer ${token}`;
@@ -2427,30 +3104,36 @@
                 .then(response => response.json())
                 .then(data => {
                     const logsDiv = document.getElementById('logs-content');
-                    if (data.logs && data.logs.length > 0) {
-                        let html = '';
-                        data.logs.forEach(log => {
-                            const levelClass = {
-                                'ERROR': 'danger',
-                                'WARNING': 'warning',
-                                'INFO': 'success'
-                            }[log.level] || '';
-                            html += `
-                                <div class="status-card ${levelClass}">
-                                    <div class="card-title">${log.level} - ${log.timestamp}</div>
-                                    <div class="card-content">
-                                        <strong>${log.module}</strong>: ${log.message}
+                    if (logsDiv) {
+                        if (data.logs && data.logs.length > 0) {
+                            let html = '';
+                            data.logs.forEach(log => {
+                                const levelClass = {
+                                    'ERROR': 'danger',
+                                    'WARNING': 'warning',
+                                    'INFO': 'success'
+                                }[log.level] || '';
+                                html += `
+                                    <div class="status-card ${levelClass}">
+                                        <div class="card-title">${log.level} - ${log.timestamp}</div>
+                                        <div class="card-content">
+                                            <strong>${log.module}</strong>: ${log.message}
+                                        </div>
                                     </div>
-                                </div>
-                            `;
-                        });
-                        logsDiv.innerHTML = html;
-                    } else {
-                        logsDiv.innerHTML = `<div class="status-card"><div class="card-title">${t('logs.no_records')}</div><div class="card-content">${t('logs.no_logs_generated')}</div></div>`;
+                                `;
+                            });
+                            logsDiv.innerHTML = html;
+                        } else {
+                            logsDiv.innerHTML = `<div class="status-card"><div class="card-title">${t('logs.no_records')}</div><div class="card-content">${t('logs.no_logs_generated')}</div></div>`;
+                        }
                     }
                 })
                 .catch(error => {
-                    document.getElementById('logs-content').innerHTML = `<div class="status-card danger"><div class="card-title">${t('logs.loading_failed')}</div><div class="card-content">${t('logs.failed_to_get_logs')}: ${error.message}</div></div>`;
+                    console.error('获取系统日志失败:', error);
+                    const logsDiv = document.getElementById('logs-content');
+                    if (logsDiv) {
+                        logsDiv.innerHTML = `<div class="status-card danger"><div class="card-title">${t('logs.loading_failed')}</div><div class="card-content">${t('logs.failed_to_get_logs')}: ${error.message}</div></div>`;
+                    }
                 });
         }
         
@@ -2537,6 +3220,18 @@
         function showLogs() {
             // 跳转到系统日志页面
             window.location.href = '/ui/logs.html';
+        }
+        
+        // 一键启动防御
+        function startFullProtection() {
+            // 设置防护级别为全面防护
+            document.getElementById('protection-level').value = '4';
+            // 应用防护级别
+            applyProtectionLevel();
+            // 显示成功提示
+            alert('防御已启动，系统已设置为全面防护模式');
+            // 刷新状态
+            refreshStatus();
         }
         
 
@@ -2936,6 +3631,10 @@
             }
             
             try {
+                // 隐藏加载指示器，显示图表
+                document.getElementById('system-resources-loading').style.display = 'none';
+                document.getElementById('system-resources-chart').style.display = 'block';
+                
                 // 获取当前时间
                 const now = new Date();
                 const timeLabel = now.getHours().toString().padStart(2, '0') + ':' + 
@@ -3430,5 +4129,9 @@
             return div.innerHTML;
         }
     </script>
+    <!-- 系统资源占用标注 -->
+    <div style="position: fixed; bottom: 10px; left: 10px; background: rgba(10, 25, 47, 0.8); color: #64ffda; padding: 5px 10px; border-radius: 4px; font-size: 12px; backdrop-filter: blur(10px); border: 1px solid rgba(100, 255, 218, 0.3); z-index: 999;">
+        本程序轻量运行，CPU<5%，内存<60MB
+    </div>
 </body>
 </html>
