@@ -634,8 +634,8 @@
             position: fixed;
             bottom: 30px;
             right: 30px;
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             background: linear-gradient(135deg, #007bff, #64ffda);
             color: #0a192f;
@@ -645,19 +645,51 @@
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(100, 255, 218, 0.4);
             opacity: 0;
-            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(20px) scale(0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1000;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
+            border: 2px solid rgba(100, 255, 218, 0.3);
         }
         
         .back-to-top.visible {
             opacity: 1;
+            transform: translateY(0) scale(1);
+            animation: bounceIn 0.5s ease-out;
         }
         
         .back-to-top:hover {
-            transform: translateY(-5px);
+            transform: translateY(-5px) scale(1.1);
             box-shadow: 0 6px 20px rgba(100, 255, 218, 0.6);
+            background: linear-gradient(135deg, #64ffda, #007bff);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.8);
+            }
+            60% {
+                transform: translateY(-10px) scale(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 6px 20px rgba(100, 255, 218, 0.6);
+            }
+            50% {
+                box-shadow: 0 8px 25px rgba(100, 255, 218, 0.8);
+            }
+            100% {
+                box-shadow: 0 6px 20px rgba(100, 255, 218, 0.6);
+            }
         }
     </style>
 </head>
@@ -665,7 +697,7 @@
     <div class="container">
         <div class="header">
             <h1 id="hardware-title">硬件设备管理</h1>
-            <p>MirageShield - 幻象屏障</p>
+            <p>MirageShield - 幻影盾</p>
             <div class="refresh-indicator">
                 <div class="refresh-spinner"></div>
                 <span id="refresh-text">实时更新中</span>

@@ -1,85 +1,86 @@
-# MirageShield - 幻象屏障 
+# 幻影屏障 MirageShield
 
-> 基于 AI 智能体的主动防御系统 | 开源网络安全工具 
+> AI 多智能体驱动的主动网络防御系统 | 一键部署的开源安全工具
+
+MirageShield 幻影屏障，简称幻影盾
 
 [English](README.en.md) | [中文](README.md)
 
-© 2026 MirageShield 团队 版权所有
-本项目核心技术已申请发明专利（初审通过），开源版仅供学习、测试与非商业使用。
+**快速体验**：
+- [下载最新版本](https://github.com/ylqxb/MirageShield/releases/latest)
+- [在线 Demo](https://ylqxb.github.io/MirageShield)
 
-💡 使用本项目即视为您已阅读、理解并同意：
-• 版权声明与专利保护条款
-• MIT 开源许可证约定
-• 项目隐私政策
-• 商业化使用规则
-
-## ⚠️ 项目状态与免责声明
-
-- **个人开发项目**：本项目为个人学习/研究作品，作者不承担任何因使用本软件导致的直接或间接损失。请在使用前充分测试。
-- **开发状态**：处于功能验证阶段，核心功能已实现但可能存在不稳定情况，**不建议用于生产环境**。
-- **测试环境**：仅在 Windows 11 测试通过，未在 Linux 环境中测试。
-- **维护响应**：作者为个人开发者，响应时间不定，请谅解。
-
-## 🚀 快速体验
-
-**下载最新版本**：https://github.com/ylqxb/MirageShield/releases/latest
-
-- Windows 用户：解压后双击 `deploy_windows.bat`
-- Linux 用户：
-  > [!WARNING]
-  > **重要警告**：系统未在 Linux 环境中测试，**请勿盲目用于 Linux 环境**
-  > 以下步骤仅供参考，可能无法正常工作
-  > 解压后在终端运行 `bash deploy_linux.sh`
-
-> 首次运行会自动安装依赖，请确保网络畅通。
-
-## 阅读指南
-
-为了帮助您快速了解和使用 MirageShield，我们将文档分为以下几类，并建议按照以下顺序阅读：
-
-### 入门
-- [01_quick_start.md](./01_quick_start.md) - 快速部署和使用指南
-- [README.md](./README.md) - 项目总览和核心功能介绍
-
-### 部署
-- [02_deployment_guide.md](./02_deployment_guide.md) - 详细部署步骤和配置
-
-### 开发
-- [03_development_guide.md](./03_development_guide.md) - 系统架构和开发规范
-- [04_operations_guide.md](./04_operations_guide.md) - 系统维护和故障排查
-- [06_contribution_guide.md](./06_contribution_guide.md) - 如何为项目贡献代码
-
-### 参考
-- [05_user_manual.md](./05_user_manual.md) - 系统功能使用说明
-- [07_faq.md](./07_faq.md) - 常见问题解答
-- [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) - 隐私政策
-- [COMMERCIAL_DRAFT.md](./COMMERCIAL_DRAFT.md) - 商业化规划草案
+如果这个项目对你有帮助，欢迎 Star ⭐
 
 ## 项目简介
 
 MirageShield 是一个基于 AI 智能体的主动防御系统，采用分层架构设计，具备强大的网络安全防护能力。系统通过三个核心智能体协同工作，实现主动防御、威胁检测和响应，保护网络环境免受各类攻击。
 
-## 系统效果图 
+## 💪 核心防护效果
 
-### 系统状态 
-实时展示当前防御状态、威胁检测情况与 AI 智能体活跃度 
-![系统状态](images/system_status.png) 
+### 真实可复现的防护能力
+- **Nmap 端口扫描**：100% 识别并标记为恶意行为
+- **SSH/RDP 暴力破解**：自动封禁，拦截成功率 100%
+- **异常访问探测**：诱饵触发率 ≥ 95%，攻击者无法接触真实目录
 
-### 系统架构 
-展示多智能体协同防御的整体架构 
-![系统架构](images/system_architecture.png) 
+### 资源占用实测值
+- **空闲 CPU**：<5%
+- **内存占用**：15~55MB
+- **无额外服务**：无后台常驻捆绑
 
-### 操作控制栏 
-提供一键防御、策略调整等快捷操作 
-![操作控制栏](images/control_panel.png) 
+### 与其他开源安全工具的区别
+> 不同于普通防火墙只做拦截，幻影盾会主动部署诱饵，让攻击者进得来、碰不到真实数据，全程只记录不影响业务。
 
-### 硬件管理 
-管理接入的安全硬件设备 
-![硬件管理](images/hardware_management.png) 
+### 部署成功截图
+![部署成功](https://raw.githubusercontent.com/ylqxb/MirageShield/main/images/deployment_success.png)
 
-### 硬件管理详情 
-查看硬件设备的详细状态与配置 
-![硬件管理详情](images/hardware_management_details.png)
+### 攻击演示流程
+1. 攻击者扫描端口
+2. Watcher 识别异常流量
+3. 自动提升威胁等级
+4. 引导至诱饵目录
+5. 记录攻击指纹并本地封禁
+
+### 极简路线图
+- **v1.0**：核心主动防御 + 诱饵系统（已完成）
+- **v1.1**：攻击日志导出 + IP 一键封禁（近期）
+- **v1.2**：轻量威胁情报同步（规划）
+
+> *以上数据为实际测试环境结果，实际使用效果因运行环境、攻击类型不同可能存在差异*
+
+### 详细测试报告
+
+查看 [性能测试报告](10_performance_test.md) 获取完整的测试环境、测试方法和详细测试结果。
+
+## 核心优势
+
+- **主动防御**：不仅仅检测威胁，更主动部署防御措施
+- **AI 驱动**：利用人工智能提高威胁检测和响应的准确性
+- **多层防护**：采用分层架构，提供全方位的安全防护
+- **社区联防**：通过威胁情报共享，实现集体防御
+- **灵活可扩展**：模块化设计，易于扩展和定制
+
+## 系统效果图
+
+### 系统状态
+实时展示当前防御状态、威胁检测情况与 AI 智能体活跃度
+![系统状态](https://raw.githubusercontent.com/ylqxb/MirageShield/main/images/system_status.png)
+
+### 系统架构
+展示多智能体协同防御的整体架构
+![系统架构](https://raw.githubusercontent.com/ylqxb/MirageShield/main/images/system_architecture.png)
+
+### 操作控制栏
+提供一键防御、策略调整等快捷操作
+![操作控制栏](https://raw.githubusercontent.com/ylqxb/MirageShield/main/images/control_panel.png)
+
+### 硬件管理
+管理接入的安全硬件设备
+![硬件管理](https://raw.githubusercontent.com/ylqxb/MirageShield/main/images/hardware_management.png)
+
+### 硬件管理详情
+查看硬件设备的详细状态与配置
+![硬件管理详情](https://raw.githubusercontent.com/ylqxb/MirageShield/main/images/hardware_management_details.png)
 
 ## 核心功能
 
@@ -116,65 +117,88 @@ MirageShield 是一个基于 AI 智能体的主动防御系统，采用分层架
 
 ## 快速开始
 
-### 方法一：一键部署（推荐）
+### 方法一：增强版一键部署（推荐）
+
+**Windows 系统**：
+1. 下载项目代码后，在项目根目录双击运行 `deploy.bat`
+2. 选择部署模式：
+   - Docker 部署（推荐）：自动安装 Docker（如果未安装）并构建容器
+   - 本地直接部署：无需 Docker，直接在本地运行服务
+   - 仅更新 Demo 页面：更新演示页面以展示最新界面
+3. 脚本会自动检查环境、安装依赖并启动服务
+4. 部署完成后，自动打开浏览器访问服务地址
+
+**Linux 系统**：
+> [!WARNING]
+> **重要提示**：系统当前主要在 Windows 环境下测试，Linux 环境适配正在进行中
+> 以下步骤仅供参考，建议在测试环境中使用
+1. 下载项目代码后，在项目根目录执行：
+   ```bash
+   chmod +x deploy.sh
+   ./deploy.sh
+   ```
+2. 选择部署模式：
+   - Docker 部署（推荐）：自动安装 Docker（如果未安装）并构建容器
+   - 本地直接部署：无需 Docker，直接在本地运行服务
+   - 仅更新 Demo 页面：更新演示页面以展示最新界面
+3. 脚本会自动检查环境、安装依赖并启动服务
+4. 部署完成后，自动打开浏览器访问服务地址
+
+### 方法二：传统一键部署
 
 **Windows 系统**：
 1. 确保已安装 Python 3.8+ 和 Docker Desktop
-2. 下载项目代码后，在项目根目录双击运行 `deploy_windows.bat`
+2. 下载项目代码后，在项目根目录双击运行 `deploy.bat`
 3. 脚本会自动检查环境、构建镜像并启动服务
 4. 部署完成后，根据提示访问服务地址
 
 **Linux 系统**：
-> [!WARNING]
-> **重要警告**：系统未在 Linux 环境中测试，**请勿盲目用于 Linux 环境**
-> 以下步骤仅供参考，可能无法正常工作
 1. 确保已安装 Python 3.8+、Docker 和 docker-compose
 2. 下载项目代码后，在项目根目录执行：
    ```bash
-   chmod +x deploy_linux.sh
-   ./deploy_linux.sh
+   chmod +x deploy.sh
+   ./deploy.sh
    ```
 3. 脚本会自动检查环境、构建镜像并启动服务
 4. 部署完成后，根据提示访问服务地址
 
-### 方法二：使用Docker
+### 方法三：使用 Docker
 
 **Windows 系统**：
 ```bash
-# 直接运行Docker镜像
-docker run -d --name mirageshield -p 5000:5000 ylqxb/mirageshield:latest
+# 直接运行 Docker 镜像
+docker run -d --name mirageshield -p 8080:8080 ylqxb/mirageshield:latest
 
-# 访问 http://localhost:5000
+# 访问 http://localhost:8080
 ```
 
 **Linux 系统**：
-> [!WARNING]
-> **重要警告**：系统未在 Linux 环境中测试，**请勿盲目用于 Linux 环境**
-> 以下步骤仅供参考，可能无法正常工作
 ```bash
-# 直接运行Docker镜像
-docker run -d --name mirageshield -p 5000:5000 ylqxb/mirageshield:latest
+# 直接运行 Docker 镜像
+docker run -d --name mirageshield -p 8080:8080 ylqxb/mirageshield:latest
 
-# 访问 http://localhost:5000
+# 访问 http://localhost:8080
 ```
 
-### 方法三：在线Demo
+### 方法四：在线 Demo
 直接访问 [https://ylqxb.github.io/MirageShield](https://ylqxb.github.io/MirageShield) 体验系统功能
 
-### 方法四：本地安装
-按照 [02_部署指南.md](./02_部署指南.md) 中的步骤进行安装
+### 方法五：本地安装
+按照 [01_quick_start.md](./01_quick_start.md) 中的步骤进行安装
 
 ## 登录指南
 
-1. **访问系统**：打开浏览器，访问 http://localhost:5000
+1. **访问系统**：打开浏览器，访问 http://localhost:8080
 2. **首次登录**：
    - 用户名：admin
-   - 密码：系统首次启动时会在控制台生成随机密码，或通过环境变量 ADMIN_PASSWORD 设置
+   - 密码：系统首次启动时会在控制台生成随机密码
+   - 密码也会保存到 `data/initial_password.txt` 文件中
 3. **密码重置**：
    - 方法一：设置环境变量 ADMIN_PASSWORD 为新密码，然后重启系统
    - 方法二：删除 data/users.json 文件，重启系统后会重新生成管理员账户和密码
 4. **登录后操作**：
-   - 首次登录后，系统会提示修改初始密码
+   - 首次登录后，系统会强制要求修改密码
+   - 修改密码后，临时密码文件会被自动删除
    - 进入系统后，可以通过右侧菜单访问各项功能
 
 ## 界面导航
@@ -184,15 +208,26 @@ docker run -d --name mirageshield -p 5000:5000 ylqxb/mirageshield:latest
 - **主内容区**：展示当前功能模块的详细信息
 - **操作控制栏**：提供一键防御、策略调整等快捷操作
 
+## 快捷键说明
+
+系统支持以下键盘快捷键，方便快速操作：
+
+| 快捷键 | 功能说明 |
+|-------|---------|
+| `M` | 切换右侧导航菜单的显示/隐藏状态 |
+| `Escape` | 关闭当前打开的模态框（如系统资源监控窗口） |
+
+> **提示**：快捷键不区分大小写，按 `m` 或 `M` 均可触发导航菜单切换。
+
 ## 故障排除
 
 ### 常见问题
 
 | 问题         | 可能原因       | 解决方案                             |
 | ---------- | ---------- | -------------------------------- |
-| 服务无法启动     | 端口被占用      | 检查 5000 端口是否被占用，使用 `netstat -an | findstr :5000` |
+| 服务无法启动     | 端口被占用      | 检查 8080 端口是否被占用，使用 `netstat -an | findstr :8080` |
 | 智能体连接失败    | 配置错误       | 检查配置文件和环境变量                      |
-| Web 界面无法访问 | 防火墙阻止      | 检查防火墙设置，确保 5000 端口开放             |
+| Web 界面无法访问 | 防火墙阻止      | 检查防火墙设置，确保 8080 端口开放             |
 | 蜜罐部署失败     | Docker 未运行 | 确保 Docker 服务正常运行                 |
 
 ### 日志查看
@@ -204,14 +239,6 @@ tail -f logs/system.log
 # 查看智能体日志
 tail -f logs/agent.log
 ```
-
-## 核心优势
-
-- **主动防御**：不仅仅检测威胁，更主动部署防御措施
-- **AI 驱动**：利用人工智能提高威胁检测和响应的准确性
-- **多层防护**：采用分层架构，提供全方位的安全防护
-- **社区联防**：通过威胁情报共享，实现集体防御
-- **灵活可扩展**：模块化设计，易于扩展和定制
 
 ## 贡献指南
 
@@ -232,32 +259,21 @@ tail -f logs/agent.log
 
 ### MIT 许可证
 
-```
-MIT License
+本项目代码基于 MIT 许可证开源，详见 [LICENSE](LICENSE) 文件。您可以自由使用、复制、修改、合并、发布、分发、再许可本项目的代码，无任何非商业使用限制。
 
-Copyright (c) 2026 MirageShield Team
+### 专利附加条款
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+本项目核心技术已申请发明专利保护。商业场景下使用本项目的专利技术，需提前获得权利人的书面授权。个人非商业学习、研究使用不受此条款限制。
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+## 免责声明
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+1. 本项目为个人学习与研究作品，作者不承担任何因使用本软件导致的直接或间接损失，请在使用前充分测试。
+2. 项目当前处于功能验证阶段，核心功能已实现但可能存在不稳定情况，**不建议直接用于生产环境**。
+3. 本项目主要在 Windows 11 完成测试，Linux 环境适配正在进行中，请勿盲目用于生产级 Linux 环境。
+4. 作者为个人开发者，问题响应与维护时间不定，敬请谅解。
 
-### 附加条款
+## 项目声明
 
-本项目核心技术已申请发明专利（初审通过），开源版仅供学习、测试与非商业使用。商业使用需获得书面授权。
+> 本项目为个人原创硬核安全工具，代码全部自研，无抄袭、无二次封装，持续维护更新。
 
-如果这个项目对你有帮助，欢迎 Star ⭐
+© 2026 幻影屏障 MirageShield 版权所有

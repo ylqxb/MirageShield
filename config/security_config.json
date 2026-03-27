@@ -1,0 +1,11 @@
+{
+  "jwt_expiration_hours": 1,
+  "jwt_refresh_days": 7,
+  "password_min_length": 8,
+  "max_login_attempts": 5,
+  "lockout_duration_minutes": 15,
+  "session_timeout_minutes": 30,
+  "enable_two_factor_auth": false,
+  "allowed_failed_attempts": 3,
+  "password_reset_expiry_hours": 24
+}

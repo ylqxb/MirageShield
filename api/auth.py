@@ -81,8 +81,43 @@ def load_users():
         # 首次运行时生成随机密码
         if not initial_password:
             initial_password = generate_random_password()
-            logger.warning(f"未设置ADMIN_PASSWORD环境变量，生成随机初始密码: {initial_password}")
-            logger.warning("首次运行，请使用此密码登录并立即修改")
+            logger.info("生成随机初始密码")
+            logger.info("首次运行，请使用控制台输出的密码登录并立即修改")
+            
+            # 保存密码到临时文件，方便小白用户查看
+            import tempfile
+            temp_password_file = os.path.join(tempfile.gettempdir(), 'mirageshield_initial_password.txt')
+            
+            # 写入密码文件
+            with open(temp_password_file, 'w', encoding='utf-8') as f:
+                f.write(f"=== 首次运行提示 ===\n")
+                f.write(f"初始管理员账号: admin\n")
+                f.write(f"初始密码: {initial_password}\n")
+                f.write(f"请使用此密码登录并立即修改\n")
+                f.write(f"\n此文件将在首次登录后自动删除\n")
+            
+            # 设置文件权限为600（只有所有者可读写）
+            try:
+                import stat
+                if os.name != 'nt':  # 非Windows平台
+                    os.chmod(temp_password_file, stat.S_IRUSR | stat.S_IWUSR)  # 600权限
+                    # 验证权限设置成功
+                    current_permissions = os.stat(temp_password_file).st_mode
+                    if (current_permissions & 0o777) == 0o600:
+                        logger.info(f"已设置密码文件权限为600: {temp_password_file}")
+                    else:
+                        logger.warning(f"密码文件权限设置可能未成功，当前权限: {oct(current_permissions)[-3:]}")
+                else:
+                    logger.info(f"Windows平台跳过文件权限设置: {temp_password_file}")
+            except Exception as e:
+                logger.warning(f"设置文件权限失败: {str(e)}")
+            
+            print(f"\n=== 首次运行提示 ===")
+            print(f"初始管理员账号: admin")
+            print(f"初始密码: {initial_password}")
+            print(f"请使用此密码登录并立即修改")
+            print(f"\n密码也已保存到文件: {temp_password_file}")
+            print(f"如果控制台窗口关闭，您可以查看此文件获取密码\n")
         password_changed = True
         logger.info(f"首次运行，需要生成新密码: {password_changed}")
     elif initial_password and not existing_users:
@@ -393,6 +428,16 @@ def register_auth_routes(app):
             # 更新密码
             user['password'] = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
             user['force_password_change'] = False  # 取消强制修改密码标记
+            
+            # 删除临时密码文件（如果存在）
+            import tempfile
+            temp_password_file = os.path.join(tempfile.gettempdir(), 'mirageshield_initial_password.txt')
+            if os.path.exists(temp_password_file):
+                try:
+                    os.remove(temp_password_file)
+                    logger.info(f"临时密码文件已删除: {temp_password_file}")
+                except Exception as e:
+                    logger.error(f"删除临时密码文件失败: {str(e)}")
             
             # 保存用户数据
             save_users(users)

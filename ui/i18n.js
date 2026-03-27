@@ -4,7 +4,7 @@ const i18n = {
     // 中文
     'zh-CN': {
         // 页面标题
-        'page.title': 'MirageShield 幻象屏障主动防御系统',
+        'page.title': 'MirageShield 幻影盾主动防御系统',
         'page.subtitle': '实时监控与管理平台',
         
         // 状态区域
@@ -342,6 +342,9 @@ const i18n = {
         'monitoring.MB': 'MB',
         'monitoring.GB': 'GB',
         'monitoring.TB': 'TB',
+        'monitoring.system_resources': '系统资源使用情况',
+        'monitoring.resource_monitoring': '资源监控',
+        'monitoring.close': '关闭',
         
         // 页脚
         'footer.copyright': '© 2026 MirageShield 团队 版权所有，侵权必究 - 版本 0.2.1',
@@ -353,6 +356,7 @@ const i18n = {
         // 导航栏
         'nav.title': '导航',
         'nav.navigation': 'Navigation',
+        'nav.menu': '导航菜单',
         
         // 登录相关
         'login.title': '用户登录',
@@ -732,6 +736,9 @@ const i18n = {
         'monitoring.MB': 'MB',
         'monitoring.GB': 'GB',
         'monitoring.TB': 'TB',
+        'monitoring.system_resources': 'System Resource Usage',
+        'monitoring.resource_monitoring': 'Resource Monitoring',
+        'monitoring.close': 'Close',
         
         // 页脚
         'footer.copyright': '© 2026 MirageShield Team. All rights reserved. - Version 0.2.1',
@@ -743,6 +750,7 @@ const i18n = {
         // 导航栏
         'nav.title': 'Navigation',
         'nav.navigation': 'Navigation',
+        'nav.menu': 'Navigation Menu',
         
         // 登录相关
         'login.title': 'User Login',
@@ -1039,6 +1047,22 @@ function updateUI() {
             }
         }
     });
+    
+    // 更新导航栏标题
+    const navTitle = document.getElementById('navTitle');
+    if (navTitle) {
+        navTitle.textContent = t('nav.menu');
+    }
+    
+    // 更新资源监控按钮和模态框
+    const resourceMonitoringText = document.getElementById('resource-monitoring-text');
+    if (resourceMonitoringText) {
+        resourceMonitoringText.textContent = t('monitoring.resource_monitoring');
+    }
+    const systemResourcesTitle = document.getElementById('system-resources-title');
+    if (systemResourcesTitle) {
+        systemResourcesTitle.textContent = t('monitoring.system_resources');
+    }
     
 
     
