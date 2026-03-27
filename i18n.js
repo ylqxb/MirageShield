@@ -347,7 +347,7 @@ const i18n = {
         'monitoring.close': '关闭',
         
         // 页脚
-        'footer.copyright': '© 2026 MirageShield 团队 版权所有，侵权必究 - 版本 0.2.1',
+        'footer.copyright': '© 2026 MirageShield 团队 版权所有，侵权必究 - 版本 v0.2.2',
         
         // 语言切换
         'language.zh': '中文',
