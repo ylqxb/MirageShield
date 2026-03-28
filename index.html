@@ -8,6 +8,12 @@
         <meta name="description" content="MirageShield 幻影盾主动防御系统 - 实时监控与管理平台">
         <link rel="preconnect" href="https://cdnjs.cloudflare.com">
         <link rel="preconnect" href="https://cdn.jsdelivr.net">
+        <!-- 加载关键资源 -->
+        <script src="/ui/i18n.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
+        
+        <!-- 预加载ECharts -->
+        <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
         <style>
         * {
             margin: 0;
@@ -22,6 +28,35 @@
             line-height: 1.6;
             position: relative;
             overflow-x: hidden;
+        }
+        
+        /* 星光闪烁效果 */
+        #stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .star {
+            position: absolute;
+            background: #64ffda;
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
         }
         
         /* 语言切换按钮样式 */
@@ -377,7 +412,7 @@
             background: linear-gradient(45deg, #64ffda, #007bff);
             border-radius: 50%;
             box-shadow: 0 0 15px rgba(100, 255, 218, 0.9), 0 0 30px rgba(0, 123, 255, 0.7), 0 0 45px rgba(100, 255, 218, 0.5);
-            animation: fall linear infinite;
+            /* animation: fall linear infinite; */
         }
         
         @keyframes fall {
@@ -419,7 +454,7 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(45deg, transparent, rgba(100, 255, 218, 0.05), transparent);
-            animation: headerScan 8s ease-in-out infinite;
+            /* animation: headerScan 8s ease-in-out infinite; */
             z-index: 0;
         }
         
@@ -484,7 +519,7 @@
             width: 100%;
             height: 2px;
             background: linear-gradient(90deg, transparent, #64ffda, transparent);
-            animation: titleGlow 3s ease-in-out infinite;
+            /* animation: titleGlow 3s ease-in-out infinite; */
         }
         
         @keyframes titleGlow {
@@ -747,7 +782,7 @@
             height: 3px;
             background: linear-gradient(90deg, #ff6b6b, #f39c12, #4caf50, #007bff, #9b59b6);
             background-size: 200% 100%;
-            animation: vibrantFlow 8s ease infinite;
+            /* animation: vibrantFlow 8s ease infinite; */
         }
         
         @keyframes vibrantFlow {
@@ -771,7 +806,7 @@
             width: 100%;
             height: 2px;
             background: linear-gradient(90deg, transparent, #64ffda, transparent);
-            animation: cardGlow 3s ease-in-out infinite;
+            /* animation: cardGlow 3s ease-in-out infinite; */
         }
         
         @keyframes cardGlow {
@@ -1297,7 +1332,7 @@
             border-radius: 6px;
             color: #0a192f;
             font-weight: 600;
-            z-index: 2100;
+            z-index: 11000; /* 高于模态框的z-index */
             animation: slideInRight 0.3s ease-out;
             background: linear-gradient(135deg, #64ffda, #007bff);
             box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
@@ -1361,8 +1396,7 @@
             }
         }
         </style>
-    <script src="/ui/i18n.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
+
     <!-- Chart.js 加载 -->
     <script>
         // 加载Chart.js的函数
@@ -1422,8 +1456,11 @@
             }
         }
         
-        // 初始化Chart.js
-        initChartJS();
+        // 延迟初始化Chart.js，在页面完全加载后再加载
+        window.addEventListener('DOMContentLoaded', function() {
+            // 延迟1秒后加载Chart.js，给页面其他内容足够的加载时间
+            setTimeout(initChartJS, 1000);
+        });
         
         // 添加模态框外部点击关闭功能的公共函数
         function addModalCloseHandler(modalId, closeFunction) {
@@ -3846,24 +3883,28 @@
             }
         }
         
-        // 生成星光下坠效果
+        // 生成星光闪烁效果
         function createStars() {
             const starsContainer = document.getElementById('stars');
-            const starCount = 150;
+            const starCount = 100; // 增加星星数量，增强效果
+            
+            // 使用文档片段来批量添加星星，减少DOM操作次数
+            const fragment = document.createDocumentFragment();
             
             for (let i = 0; i < starCount; i++) {
                 const star = document.createElement('div');
                 star.classList.add('star');
                 
                 // 随机大小
-                const size = Math.random() * 4 + 1;
+                const size = Math.random() * 3 + 1;
                 star.style.width = `${size}px`;
                 star.style.height = `${size}px`;
                 
                 // 随机位置
                 const left = Math.random() * 100;
+                const top = Math.random() * 100;
                 star.style.left = `${left}vw`;
-                star.style.top = `-${size}px`;
+                star.style.top = `${top}vh`;
                 
                 // 随机颜色（蓝色调为主，符合科技感）
                 const hue = Math.random() * 60 + 180; // 蓝色到青色
@@ -3872,15 +3913,18 @@
                 star.style.backgroundColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
                 
                 // 随机动画持续时间
-                const duration = Math.random() * 12 + 8;
+                const duration = Math.random() * 3 + 2;
                 star.style.animationDuration = `${duration}s`;
                 
                 // 随机动画延迟
-                const delay = Math.random() * 10;
+                const delay = Math.random() * 5;
                 star.style.animationDelay = `${delay}s`;
                 
-                starsContainer.appendChild(star);
+                fragment.appendChild(star);
             }
+            
+            // 一次性添加所有星星
+            starsContainer.appendChild(fragment);
         }
         
         // 图表对象
@@ -4499,5 +4543,1022 @@
     <div style="position: fixed; bottom: 10px; left: 10px; background: rgba(10, 25, 47, 0.8); color: #64ffda; padding: 5px 10px; border-radius: 4px; font-size: 12px; backdrop-filter: blur(10px); border: 1px solid rgba(100, 255, 218, 0.3); z-index: 999;">
         <span id="lightweight-text">本程序轻量运行，CPU<5%，内存<60MB</span>
     </div>
+
+    <!-- 左侧悬停工具箱 -->
+    <div id="toolbox-container" class="toolbox-container">
+        <div class="toolbox-header">
+            <div class="toolbox-icon">🧰</div>
+        </div>
+        <div class="toolbox-panel">
+            <div class="toolbox-title">快捷工具</div>
+            <div class="toolbox-item" onclick="toggleWorldHeatmap()" title="全球热力图">🌍</div>
+        </div>
+    </div>
+
+    <!-- 全球热力图模态框 -->
+    <div id="worldHeatmapModal" class="modal" style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6);">
+        <div class="modal-content" style="background-color: #0a192f; margin: 2% auto; padding: 0; border: 1px solid rgba(100, 255, 218, 0.5); border-radius: 8px; width: 90%; max-width: 1200px; max-height: 95vh; position: relative; z-index: 10001; box-shadow: 0 0 30px rgba(100, 255, 218, 0.3); overflow: auto;">
+            <!-- 顶部标题栏 -->
+            <div class="modal-header" style="padding: 15px 20px; border-bottom: 1px solid rgba(100, 255, 218, 0.3); display: flex; justify-content: space-between; align-items: center; background: rgba(10, 25, 47, 0.9); border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                <h2 style="color: #64ffda; margin: 0; font-size: 18px;">全球攻击者热力图</h2>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <!-- 统计卡片 -->
+                    <div style="background: rgba(10, 25, 47, 0.8); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 6px; padding: 10px 15px; min-width: 120px;">
+                        <div style="color: #a8b2d1; font-size: 12px; margin-bottom: 5px;">总攻击次数</div>
+                        <div style="color: #64ffda; font-size: 16px; font-weight: bold;">60</div>
+                    </div>
+                    <div style="background: rgba(10, 25, 47, 0.8); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 6px; padding: 10px 15px; min-width: 120px;">
+                        <div style="color: #a8b2d1; font-size: 12px; margin-bottom: 5px;">攻击来源地区</div>
+                        <div style="color: #64ffda; font-size: 16px; font-weight: bold;">8</div>
+                    </div>
+                    <div style="background: rgba(10, 25, 47, 0.8); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 6px; padding: 10px 15px; min-width: 120px;">
+                        <div style="color: #a8b2d1; font-size: 12px; margin-bottom: 5px;">高危IP数量</div>
+                        <div style="color: #64ffda; font-size: 16px; font-weight: bold;">2</div>
+                    </div>
+                    <div style="background: rgba(10, 25, 47, 0.8); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 6px; padding: 10px 15px; min-width: 120px;">
+                        <div style="color: #a8b2d1; font-size: 12px; margin-bottom: 5px;">已拦截攻击</div>
+                        <div style="color: #64ffda; font-size: 16px; font-weight: bold;">55</div>
+                    </div>
+                    <!-- 关闭按钮 -->
+                    <span class="close" onclick="toggleWorldHeatmap()" style="color: #64ffda; font-size: 20px; font-weight: bold; cursor: pointer; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s ease;">&times;</span>
+                </div>
+            </div>
+            
+            <!-- 主体内容区 -->
+            <div class="modal-body" style="height: calc(100% - 220px); display: flex;">
+                <!-- 左侧攻击者列表 -->
+                <div style="width: 30%; height: 100%; border-right: 1px solid rgba(100, 255, 218, 0.3); padding: 20px; overflow-y: auto;">
+                    <!-- 列表头部 -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="color: #64ffda; margin: 0; font-size: 14px;">攻击者分布</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <select style="background: rgba(10, 25, 47, 0.8); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 4px; color: #64ffda; font-size: 12px; padding: 4px 8px;">
+                                <option value="count">按攻击次数</option>
+                                <option value="time">按攻击时间</option>
+                            </select>
+                            <select style="background: rgba(10, 25, 47, 0.8); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 4px; color: #64ffda; font-size: 12px; padding: 4px 8px;">
+                                <option value="all">全部</option>
+                                <option value="high">高危</option>
+                                <option value="medium">中危</option>
+                                <option value="low">低危</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- 攻击者列表 -->
+                    <div id="attacker-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                </div>
+                <!-- 右侧地球热力图 -->
+                <div style="width: 70%; height: 100%; padding: 20px; position: relative;">
+                    <div id="heatmap-loading" style="display: flex; align-items: center; justify-content: center; height: 100%; color: #64ffda;">
+                        <div class="loading-spinner"></div>
+                        <span style="margin-left: 10px;">加载中...</span>
+                    </div>
+                    <div id="heatmap-map" style="display: none; width: 100%; height: 100%; position: relative;"></div>
+                </div>
+            </div>
+            
+            <!-- 底部时间轴和操作栏 -->
+            <div style="padding: 15px 20px; border-top: 1px solid rgba(100, 255, 218, 0.3); background: rgba(10, 25, 47, 0.9); border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                <!-- 时间轴 -->
+                <div style="margin-bottom: 15px;">
+                    <div style="color: #a8b2d1; font-size: 12px; margin-bottom: 10px;">24小时攻击趋势</div>
+                    <div style="display: flex; align-items: center; gap: 10px; overflow-x: auto; padding-bottom: 5px;">
+                        <div style="flex: 1; height: 40px; background: rgba(100, 255, 218, 0.1); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 4px; display: flex; align-items: end; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
+                            <div style="width: 80%; height: 30%; background: #64ffda; border-top-left-radius: 4px; border-top-right-radius: 4px;"></div>
+                            <div style="position: absolute; font-size: 10px; color: #a8b2d1; margin-top: -20px;">00:00</div>
+                        </div>
+                        <div style="flex: 1; height: 40px; background: rgba(100, 255, 218, 0.1); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 4px; display: flex; align-items: end; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
+                            <div style="width: 80%; height: 45%; background: #64ffda; border-top-left-radius: 4px; border-top-right-radius: 4px;"></div>
+                            <div style="position: absolute; font-size: 10px; color: #a8b2d1; margin-top: -20px;">03:00</div>
+                        </div>
+                        <div style="flex: 1; height: 40px; background: rgba(100, 255, 218, 0.1); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 4px; display: flex; align-items: end; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
+                            <div style="width: 80%; height: 60%; background: #64ffda; border-top-left-radius: 4px; border-top-right-radius: 4px;"></div>
+                            <div style="position: absolute; font-size: 10px; color: #a8b2d1; margin-top: -20px;">06:00</div>
+                        </div>
+                        <div style="flex: 1; height: 40px; background: rgba(100, 255, 218, 0.1); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 4px; display: flex; align-items: end; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
+                            <div style="width: 80%; height: 35%; background: #64ffda; border-top-left-radius: 4px; border-top-right-radius: 4px;"></div>
+                            <div style="position: absolute; font-size: 10px; color: #a8b2d1; margin-top: -20px;">09:00</div>
+                        </div>
+                        <div style="flex: 1; height: 40px; background: rgba(100, 255, 218, 0.1); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 4px; display: flex; align-items: end; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
+                            <div style="width: 80%; height: 75%; background: #64ffda; border-top-left-radius: 4px; border-top-right-radius: 4px;"></div>
+                            <div style="position: absolute; font-size: 10px; color: #a8b2d1; margin-top: -20px;">12:00</div>
+                        </div>
+                        <div style="flex: 1; height: 40px; background: rgba(100, 255, 218, 0.1); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 4px; display: flex; align-items: end; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
+                            <div style="width: 80%; height: 55%; background: #64ffda; border-top-left-radius: 4px; border-top-right-radius: 4px;"></div>
+                            <div style="position: absolute; font-size: 10px; color: #a8b2d1; margin-top: -20px;">15:00</div>
+                        </div>
+                        <div style="flex: 1; height: 40px; background: rgba(100, 255, 218, 0.1); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 4px; display: flex; align-items: end; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
+                            <div style="width: 80%; height: 40%; background: #64ffda; border-top-left-radius: 4px; border-top-right-radius: 4px;"></div>
+                            <div style="position: absolute; font-size: 10px; color: #a8b2d1; margin-top: -20px;">18:00</div>
+                        </div>
+                        <div style="flex: 1; height: 40px; background: rgba(100, 255, 218, 0.1); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 4px; display: flex; align-items: end; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
+                            <div style="width: 80%; height: 65%; background: #64ffda; border-top-left-radius: 4px; border-top-right-radius: 4px;"></div>
+                            <div style="position: absolute; font-size: 10px; color: #a8b2d1; margin-top: -20px;">21:00</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 操作按钮 -->
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button onclick="showToast('一键封禁全部高危IP', 'success')" style="background: rgba(10, 25, 47, 0.8); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 4px; color: #64ffda; font-size: 12px; padding: 6px 12px; cursor: pointer; transition: all 0.2s ease;">一键封禁全部高危IP</button>
+                    <button onclick="loadWorldHeatmap()" style="background: rgba(10, 25, 47, 0.8); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 4px; color: #64ffda; font-size: 12px; padding: 6px 12px; cursor: pointer; transition: all 0.2s ease;">刷新实时数据</button>
+                    <button onclick="exportAttackerList()" style="background: rgba(10, 25, 47, 0.8); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 4px; color: #64ffda; font-size: 12px; padding: 6px 12px; cursor: pointer; transition: all 0.2s ease;">导出攻击列表(CSV)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(10, 25, 47, 0.8);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(100, 255, 218, 0.5);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 255, 218, 0.8);
+        }
+        
+        /* 关闭按钮悬停效果 */
+        .close:hover {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6b6b !important;
+        }
+        
+        /* 攻击者列表条目样式 */
+        .attacker-item {
+            background: rgba(10, 25, 47, 0.8);
+            border: 1px solid rgba(100, 255, 218, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .attacker-item:hover {
+            background: rgba(100, 255, 218, 0.1);
+            border-color: rgba(100, 255, 218, 0.5);
+        }
+        
+        .attacker-item.highlight {
+            background: rgba(100, 255, 218, 0.15);
+            border-color: rgba(100, 255, 218, 0.8);
+        }
+        
+        .attacker-info {
+            flex: 1;
+        }
+        
+        .attacker-ip {
+            color: #ff6b6b;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
+        .attacker-location {
+            color: #a8b2d1;
+            font-size: 11px;
+            margin-bottom: 3px;
+        }
+        
+        .attacker-count {
+            color: #64ffda;
+            font-size: 11px;
+        }
+        
+        .attacker-level {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            margin-right: 8px;
+        }
+        
+        .attacker-level.low {
+            background: rgba(100, 255, 218, 0.2);
+            color: #64ffda;
+        }
+        
+        .attacker-level.medium {
+            background: rgba(255, 165, 0, 0.2);
+            color: #ffa500;
+        }
+        
+        .attacker-level.high {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+        
+        .block-button {
+            background: rgba(100, 255, 218, 0.1);
+            border: 1px solid rgba(100, 255, 218, 0.3);
+            border-radius: 4px;
+            color: #64ffda;
+            font-size: 10px;
+            padding: 4px 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .block-button:hover {
+            background: rgba(100, 255, 218, 0.2);
+            border-color: rgba(100, 255, 218, 0.6);
+        }
+        
+        /* 热力点样式 */
+        .heat-point {
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .heat-point:hover {
+            transform: translate(-50%, -50%) scale(1.2);
+            z-index: 100 !important;
+        }
+        
+        .heat-point.low {
+            background: rgba(100, 255, 218, 0.6);
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.8);
+        }
+        
+        .heat-point.medium {
+            background: rgba(255, 165, 0, 0.6);
+            box-shadow: 0 0 10px rgba(255, 165, 0, 0.8);
+        }
+        
+        .heat-point.high {
+            background: rgba(255, 107, 107, 0.6);
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
+        }
+        
+        /* 地球旋转动画 */
+        @keyframes earthRotate {
+            0% {
+                transform: rotateY(0deg);
+            }
+            100% {
+                transform: rotateY(360deg);
+            }
+        }
+        
+        .earth {
+            animation: earthRotate 30s linear infinite;
+            transform-style: preserve-3d;
+        }
+        
+        .earth:hover {
+            animation-play-state: paused;
+        }
+        
+        /* 热力点脉冲动画 */
+        @keyframes heatPulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.6;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.6;
+            }
+        }
+        
+        .heat-point {
+            animation: heatPulse 2s infinite;
+        }
+        
+        /* 热力点tooltip */
+        .heat-tooltip {
+            position: absolute;
+            background: rgba(10, 25, 47, 1);
+            border: 1px solid rgba(100, 255, 218, 0.5);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: #a8b2d1;
+            font-size: 12px;
+            z-index: 1000;
+            pointer-events: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95% !important;
+                height: 95vh !important;
+            }
+            
+            .modal-body {
+                flex-direction: column !important;
+            }
+            
+            .modal-body > div {
+                width: 100% !important;
+                height: 50% !important;
+            }
+            
+            .modal-body > div:first-child {
+                border-right: none !important;
+                border-bottom: 1px solid rgba(100, 255, 218, 0.3);
+            }
+        }
+    </style>
+
+    <style>
+        .toolbox-container {
+            position: fixed;
+            left: 120px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            width: 40px;
+            height: 40px;
+            transition: height 0.3s ease;
+            overflow: hidden;
+        }
+
+        .toolbox-header {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(10, 25, 47, 0.8);
+            border: 2px solid rgba(255, 165, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: move;
+            animation: breathe 3s ease-in-out infinite;
+            position: relative;
+            z-index: 1001;
+        }
+
+        .toolbox-icon {
+            color: white;
+            font-size: 18px;
+        }
+
+        .toolbox-panel {
+            width: 40px;
+            background: rgba(10, 25, 47, 0.9);
+            border: 1px solid rgba(100, 255, 218, 0.3);
+            border-top: none;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            padding: 10px 0;
+            position: absolute;
+            top: 40px;
+            left: 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .toolbox-title {
+            color: #64ffda;
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 0 5px;
+        }
+
+        .toolbox-item {
+            color: #64ffda;
+            font-size: 20px;
+            text-align: center;
+            padding: 10px 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .toolbox-item:hover {
+            background: rgba(255, 165, 0, 0.1);
+        }
+
+        .toolbox-item:active {
+            background: rgba(255, 165, 0, 0.2);
+        }
+
+        .toolbox-container:hover {
+            height: 220px;
+        }
+
+        .toolbox-container:hover .toolbox-header {
+            border-color: rgba(255, 165, 0, 1);
+            box-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+
+        @keyframes breathe {
+            0% {
+                border-color: rgba(255, 165, 0, 0.6);
+                box-shadow: 0 0 5px rgba(255, 165, 0, 0.3);
+            }
+            50% {
+                border-color: rgba(255, 165, 0, 0.9);
+                box-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+            }
+            100% {
+                border-color: rgba(255, 165, 0, 0.6);
+                box-shadow: 0 0 5px rgba(255, 165, 0, 0.3);
+            }
+        }
+    </style>
+
+    <script>
+        // 工具箱拖动功能
+        const toolboxContainer = document.getElementById('toolbox-container');
+        const toolboxHeader = toolboxContainer.querySelector('.toolbox-header');
+        let toolboxIsDragging = false;
+        let toolboxOffsetX, toolboxOffsetY;
+
+        toolboxHeader.addEventListener('mousedown', function(e) {
+            toolboxIsDragging = true;
+            toolboxOffsetX = e.clientX - toolboxContainer.getBoundingClientRect().left;
+            toolboxOffsetY = e.clientY - toolboxContainer.getBoundingClientRect().top;
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (toolboxIsDragging) {
+                const x = e.clientX - toolboxOffsetX;
+                const y = e.clientY - toolboxOffsetY;
+                toolboxContainer.style.left = x + 'px';
+                toolboxContainer.style.top = y + 'px';
+                toolboxContainer.style.transform = 'none';
+            }
+        });
+
+        document.addEventListener('mouseup', function() {
+            toolboxIsDragging = false;
+            document.body.style.userSelect = '';
+        });
+    </script>
+
+    <script>
+        // 全球热力图功能
+        function toggleWorldHeatmap() {
+            const modal = document.getElementById('worldHeatmapModal');
+            if (modal.style.display === 'block') {
+                // 正确关闭模态框
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+                // 确保页面布局正确
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                }, 100);
+            } else {
+                // 正确显示模态框
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                loadWorldHeatmap();
+            }
+        }
+        
+        // 添加esc按键关闭模态框的功能
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('worldHeatmapModal');
+                if (modal.style.display === 'block') {
+                    toggleWorldHeatmap();
+                }
+            }
+        });
+
+        function loadWorldHeatmap() {
+            const loadingElement = document.getElementById('heatmap-loading');
+            const mapElement = document.getElementById('heatmap-map');
+            const attackerListElement = document.getElementById('attacker-list');
+            
+            loadingElement.style.display = 'flex';
+            mapElement.style.display = 'none';
+            
+            // 从API获取真实攻击数据
+            authenticatedFetch('/api/attackers/global')
+                .then(data => {
+                    // 使用API返回的数据
+                    let attackers = data.attackers || [];
+                    
+                    // 如果API没有返回数据，使用模拟数据作为备用
+                    if (attackers.length === 0) {
+                        attackers = [
+                            { ip: '192.168.1.100', location: '中国北京', lat: 39.9042, lng: 116.4074, count: 15, type: '端口扫描' },
+                            { ip: '10.0.0.1', location: '美国纽约', lat: 40.7128, lng: -74.0060, count: 8, type: '暴力破解' },
+                            { ip: '172.16.0.1', location: '俄罗斯莫斯科', lat: 55.7558, lng: 37.6173, count: 12, type: 'SQL注入' },
+                            { ip: '192.168.0.1', location: '日本东京', lat: 35.6762, lng: 139.6503, count: 5, type: 'XSS攻击' },
+                            { ip: '10.1.1.1', location: '英国伦敦', lat: 51.5074, lng: -0.1278, count: 7, type: 'DDoS攻击' },
+                            { ip: '172.17.0.1', location: '德国柏林', lat: 52.5200, lng: 13.4050, count: 4, type: '端口扫描' },
+                            { ip: '192.168.2.1', location: '澳大利亚悉尼', lat: -33.8688, lng: 151.2093, count: 3, type: '暴力破解' },
+                            { ip: '10.2.2.2', location: '巴西圣保罗', lat: -23.5505, lng: -46.6333, count: 6, type: 'SQL注入' }
+                        ];
+                    }
+                    
+                    // 按攻击次数降序排序
+                    attackers.sort((a, b) => b.count - a.count);
+                
+                // 渲染攻击者列表
+                attackerListElement.innerHTML = attackers.map((attacker, index) => {
+                    // 确定攻击等级
+                    let level = 'low';
+                    if (attacker.count > 10) level = 'high';
+                    else if (attacker.count > 5) level = 'medium';
+                    
+                    return `
+                        <div class="attacker-item" data-ip="${attacker.ip}" onclick="highlightAttacker('${attacker.ip}')">
+                            <div class="attacker-info">
+                                <div class="attacker-ip">
+                                    <span class="attacker-level ${level}">${level === 'high' ? '高危' : level === 'medium' ? '中危' : '低危'}</span>
+                                    ${attacker.ip}
+                                </div>
+                                <div class="attacker-location">${attacker.location}</div>
+                                <div class="attacker-count">${attacker.count}次攻击 · ${attacker.type}</div>
+                            </div>
+                            <button class="block-button" onclick="event.stopPropagation(); showToast('封禁IP: ${attacker.ip}', 'success')">一键封禁</button>
+                        </div>
+                    `;
+                }).join('');
+                
+                // 显示热力图
+                loadingElement.style.display = 'none';
+                mapElement.style.display = 'block';
+                
+                // 清除地图容器内容
+                mapElement.innerHTML = '';
+                
+                // 检查ECharts是否已加载
+                if (typeof echarts === 'undefined') {
+                    // 如果ECharts未加载，显示加载中状态
+                    mapElement.innerHTML = `
+                        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #64ffda;">
+                            正在加载地图...
+                        </div>
+                    `;
+                    
+                    // 延迟100ms后再次尝试
+                    setTimeout(() => {
+                        if (typeof echarts !== 'undefined') {
+                            initGlobe();
+                        } else {
+                            mapElement.innerHTML = `
+                                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #ff4757;">
+                                    地图加载失败，请刷新页面重试
+                                </div>
+                            `;
+                        }
+                    }, 100);
+                    
+                    return;
+                }
+                
+                // 初始化地球
+                function initGlobe() {
+                    try {
+                        // 确保地图容器有正确的尺寸
+                        mapElement.style.width = '100%';
+                        mapElement.style.height = '100%';
+                        mapElement.style.minHeight = '400px';
+                        
+                        // 检查ECharts是否已加载
+                        if (typeof echarts === 'undefined') {
+                            throw new Error('ECharts is not loaded');
+                        }
+                        
+                        // 使用ECharts创建三维地球
+                        const chart = echarts.init(mapElement);
+                    
+                        // 准备热力点数据
+                        const heatmapData = attackers.map(attacker => {
+                            // 确定攻击等级
+                            let color = '#64ffda'; // 低危
+                            if (attacker.count > 10) color = '#ff4757'; // 高危
+                            else if (attacker.count > 5) color = '#ffa502'; // 中危
+                            
+                            return [
+                                attacker.lng,
+                                attacker.lat,
+                                attacker.count,
+                                color,
+                                attacker.ip,
+                                attacker.location,
+                                attacker.type
+                            ];
+                        });
+                        
+                        // 配置ECharts选项
+                        const option = {
+                            backgroundColor: '#0a192f',
+                            globe: {
+                                baseTexture: '', // 不使用纹理
+                                heightTexture: '', // 不使用高度图
+                                shading: 'lambert',
+                                light: {
+                                    main: {
+                                        intensity: 1.2,
+                                        shadow: true
+                                    },
+                                    ambient: {
+                                        intensity: 0.3
+                                    }
+                                },
+                                viewControl: {
+                                    autoRotate: true,
+                                    autoRotateSpeed: 1,
+                                    projection: 'orthographic',
+                                    damping: 0.3,
+                                    minDistance: 200,
+                                    maxDistance: 400,
+                                    zoomSensitivity: 0.5
+                                },
+                                itemStyle: {
+                                    color: 'rgba(100, 255, 218, 0.2)',
+                                    borderColor: 'rgba(100, 255, 218, 0.5)',
+                                    borderWidth: 1,
+                                    areaColor: 'rgba(100, 255, 218, 0.1)'
+                                },
+                                emphasis: {
+                                    label: {
+                                        show: true
+                                    },
+                                    itemStyle: {
+                                        color: 'rgba(100, 255, 218, 0.3)',
+                                        borderColor: 'rgba(100, 255, 218, 0.8)'
+                                    }
+                                }
+                            },
+                            series: [{
+                                type: 'scatter3D',
+                                coordinateSystem: 'globe',
+                                data: heatmapData.map(item => [
+                                    item[0], // 经度
+                                    item[1], // 纬度
+                                    10, // 高度
+                                    item[2], // 攻击次数
+                                    item[3], // 颜色
+                                    item[4], // IP
+                                    item[5], // 位置
+                                    item[6]  // 攻击类型
+                                ]),
+                                symbolSize: function(data) {
+                                    return Math.min(20, Math.max(8, data[3]));
+                                },
+                                itemStyle: {
+                                    color: function(params) {
+                                        return params.data[4];
+                                    },
+                                    opacity: 0.8
+                                },
+                                emphasis: {
+                                    itemStyle: {
+                                        opacity: 1,
+                                        shadowBlur: 10,
+                                        shadowColor: 'rgba(100, 255, 218, 0.5)'
+                                    }
+                                },
+                                tooltip: {
+                                    formatter: function(params) {
+                                        return `
+                                            <div style="color: #64ffda; font-weight: bold; margin-bottom: 5px;">${params.data[5]}</div>
+                                            <div style="margin-bottom: 3px;">位置: ${params.data[6]}</div>
+                                            <div style="margin-bottom: 3px;">攻击次数: ${params.data[3]}</div>
+                                            <div>攻击类型: ${params.data[7]}</div>
+                                        `;
+                                    }
+                                }
+                            }]
+                        };
+                        
+                        // 设置ECharts选项
+                        chart.setOption(option);
+                        
+                        // 监听窗口大小变化
+                        window.addEventListener('resize', function() {
+                            chart.resize();
+                        });
+                    } catch (error) {
+                        console.error('Failed to initialize globe:', error);
+                        mapElement.innerHTML = `
+                            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #ff4757;">
+                                地图初始化失败: ${error.message}
+                            </div>
+                        `;
+                    }
+                }
+                
+                // 调用初始化函数
+                initGlobe();
+            })
+            .catch(error => {
+                console.error('Failed to load attackers data:', error);
+                // 使用模拟数据作为备用
+                const attackers = [
+                    { ip: '192.168.1.100', location: '中国北京', lat: 39.9042, lng: 116.4074, count: 15, type: '端口扫描' },
+                    { ip: '10.0.0.1', location: '美国纽约', lat: 40.7128, lng: -74.0060, count: 8, type: '暴力破解' },
+                    { ip: '172.16.0.1', location: '俄罗斯莫斯科', lat: 55.7558, lng: 37.6173, count: 12, type: 'SQL注入' },
+                    { ip: '192.168.0.1', location: '日本东京', lat: 35.6762, lng: 139.6503, count: 5, type: 'XSS攻击' },
+                    { ip: '10.1.1.1', location: '英国伦敦', lat: 51.5074, lng: -0.1278, count: 7, type: 'DDoS攻击' },
+                    { ip: '172.17.0.1', location: '德国柏林', lat: 52.5200, lng: 13.4050, count: 4, type: '端口扫描' },
+                    { ip: '192.168.2.1', location: '澳大利亚悉尼', lat: -33.8688, lng: 151.2093, count: 3, type: '暴力破解' },
+                    { ip: '10.2.2.2', location: '巴西圣保罗', lat: -23.5505, lng: -46.6333, count: 6, type: 'SQL注入' }
+                ];
+                
+                // 按攻击次数降序排序
+                attackers.sort((a, b) => b.count - a.count);
+                
+                // 渲染攻击者列表
+                attackerListElement.innerHTML = attackers.map((attacker, index) => {
+                    // 确定攻击等级
+                    let level = 'low';
+                    if (attacker.count > 10) level = 'high';
+                    else if (attacker.count > 5) level = 'medium';
+                    
+                    return `
+                        <div class="attacker-item" data-ip="${attacker.ip}" onclick="highlightAttacker('${attacker.ip}')">
+                            <div class="attacker-info">
+                                <div class="attacker-ip">
+                                    <span class="attacker-level ${level}">${level === 'high' ? '高危' : level === 'medium' ? '中危' : '低危'}</span>
+                                    ${attacker.ip}
+                                </div>
+                                <div class="attacker-location">${attacker.location}</div>
+                                <div class="attacker-count">${attacker.count}次攻击 · ${attacker.type}</div>
+                            </div>
+                            <button class="block-button" onclick="event.stopPropagation(); showToast('封禁IP: ${attacker.ip}', 'success')">一键封禁</button>
+                        </div>
+                    `;
+                }).join('');
+                
+                // 显示热力图
+                loadingElement.style.display = 'none';
+                mapElement.style.display = 'block';
+                
+                // 清除地图容器内容
+                mapElement.innerHTML = '';
+                
+                // 检查ECharts是否已加载
+                if (typeof echarts === 'undefined') {
+                    // 如果ECharts未加载，显示加载中状态
+                    mapElement.innerHTML = `
+                        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #64ffda;">
+                            正在加载地图...
+                        </div>
+                    `;
+                    
+                    // 延迟100ms后再次尝试
+                    setTimeout(() => {
+                        if (typeof echarts !== 'undefined') {
+                            initGlobe();
+                        } else {
+                            mapElement.innerHTML = `
+                                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #ff4757;">
+                                    地图加载失败，请刷新页面重试
+                                </div>
+                            `;
+                        }
+                    }, 100);
+                    
+                    return;
+                }
+                
+                // 初始化地球
+                function initGlobe() {
+                    try {
+                        // 确保地图容器有正确的尺寸
+                        mapElement.style.width = '100%';
+                        mapElement.style.height = '100%';
+                        mapElement.style.minHeight = '400px';
+                        
+                        // 检查ECharts是否已加载
+                        if (typeof echarts === 'undefined') {
+                            throw new Error('ECharts is not loaded');
+                        }
+                        
+                        // 使用ECharts创建三维地球
+                        const chart = echarts.init(mapElement);
+                    
+                        // 准备热力点数据
+                        const heatmapData = attackers.map(attacker => {
+                            // 确定攻击等级
+                            let color = '#64ffda'; // 低危
+                            if (attacker.count > 10) color = '#ff4757'; // 高危
+                            else if (attacker.count > 5) color = '#ffa502'; // 中危
+                            
+                            return [
+                                attacker.lng,
+                                attacker.lat,
+                                attacker.count,
+                                color,
+                                attacker.ip,
+                                attacker.location,
+                                attacker.type
+                            ];
+                        });
+                        
+                        // 配置ECharts选项
+                        const option = {
+                            backgroundColor: '#0a192f',
+                            globe: {
+                                baseTexture: '', // 不使用纹理
+                                heightTexture: '', // 不使用高度图
+                                shading: 'lambert',
+                                light: {
+                                    main: {
+                                        intensity: 1.2,
+                                        shadow: true
+                                    },
+                                    ambient: {
+                                        intensity: 0.3
+                                    }
+                                },
+                                viewControl: {
+                                    autoRotate: true,
+                                    autoRotateSpeed: 1,
+                                    projection: 'orthographic',
+                                    damping: 0.3,
+                                    minDistance: 200,
+                                    maxDistance: 400,
+                                    zoomSensitivity: 0.5
+                                },
+                                itemStyle: {
+                                    color: 'rgba(100, 255, 218, 0.2)',
+                                    borderColor: 'rgba(100, 255, 218, 0.5)',
+                                    borderWidth: 1,
+                                    areaColor: 'rgba(100, 255, 218, 0.1)'
+                                },
+                                emphasis: {
+                                    label: {
+                                        show: true
+                                    },
+                                    itemStyle: {
+                                        color: 'rgba(100, 255, 218, 0.3)',
+                                        borderColor: 'rgba(100, 255, 218, 0.8)'
+                                    }
+                                }
+                            },
+                            series: [{
+                                type: 'scatter3D',
+                                coordinateSystem: 'globe',
+                                data: heatmapData.map(item => [
+                                    item[0], // 经度
+                                    item[1], // 纬度
+                                    10, // 高度
+                                    item[2], // 攻击次数
+                                    item[3], // 颜色
+                                    item[4], // IP
+                                    item[5], // 位置
+                                    item[6]  // 攻击类型
+                                ]),
+                                symbolSize: function(data) {
+                                    return Math.min(20, Math.max(8, data[3]));
+                                },
+                                itemStyle: {
+                                    color: function(params) {
+                                        return params.data[4];
+                                    },
+                                    opacity: 0.8
+                                },
+                                emphasis: {
+                                    itemStyle: {
+                                        opacity: 1,
+                                        shadowBlur: 10,
+                                        shadowColor: 'rgba(100, 255, 218, 0.5)'
+                                    }
+                                },
+                                tooltip: {
+                                    formatter: function(params) {
+                                        return `
+                                            <div style="color: #64ffda; font-weight: bold; margin-bottom: 5px;">${params.data[5]}</div>
+                                            <div style="margin-bottom: 3px;">位置: ${params.data[6]}</div>
+                                            <div style="margin-bottom: 3px;">攻击次数: ${params.data[3]}</div>
+                                            <div>攻击类型: ${params.data[7]}</div>
+                                        `;
+                                    }
+                                }
+                            }]
+                        };
+                        
+                        // 设置ECharts选项
+                        chart.setOption(option);
+                        
+                        // 监听窗口大小变化
+                        window.addEventListener('resize', function() {
+                            chart.resize();
+                        });
+                    } catch (error) {
+                        console.error('Failed to initialize globe:', error);
+                        mapElement.innerHTML = `
+                            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #ff4757;">
+                                地图初始化失败: ${error.message}
+                            </div>
+                        `;
+                    }
+                }
+                
+                // 调用初始化函数
+                initGlobe();
+            });
+        }
+        
+        // 显示热力点tooltip
+        function showHeatTooltip(event, ip, location, count, type) {
+            const tooltip = document.getElementById('heat-tooltip');
+            tooltip.innerHTML = `
+                <div style="color: #64ffda; font-weight: bold; margin-bottom: 5px;">${ip}</div>
+                <div style="margin-bottom: 3px;">位置: ${location}</div>
+                <div style="margin-bottom: 3px;">攻击次数: ${count}</div>
+                <div>攻击类型: ${type}</div>
+            `;
+            tooltip.style.display = 'block';
+            tooltip.style.left = (event.pageX + 10) + 'px';
+            tooltip.style.top = (event.pageY + 10) + 'px';
+        }
+        
+        // 隐藏热力点tooltip
+        function hideHeatTooltip() {
+            const tooltip = document.getElementById('heat-tooltip');
+            if (tooltip) tooltip.style.display = 'none';
+        }
+        
+        // 高亮攻击者
+        function highlightAttacker(ip) {
+            // 高亮列表条目
+            document.querySelectorAll('.attacker-item').forEach(item => {
+                if (item.dataset.ip === ip) {
+                    item.classList.add('highlight');
+                } else {
+                    item.classList.remove('highlight');
+                }
+            });
+            
+            // 高亮热力点
+            document.querySelectorAll('.heat-point').forEach(point => {
+                if (point.dataset.ip === ip) {
+                    point.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                    point.style.zIndex = '200';
+                } else {
+                    point.style.transform = 'translate(-50%, -50%) scale(1)';
+                    point.style.zIndex = '100';
+                }
+            });
+        }
+        
+        // 取消高亮
+        function unhighlightAttacker() {
+            document.querySelectorAll('.attacker-item').forEach(item => {
+                item.classList.remove('highlight');
+            });
+            
+            document.querySelectorAll('.heat-point').forEach(point => {
+                point.style.transform = 'translate(-50%, -50%) scale(1)';
+                point.style.zIndex = '100';
+            });
+        }
+        
+        // 导出攻击者列表为CSV
+        function exportAttackerList() {
+            // 模拟攻击者数据
+            const attackers = [
+                { ip: '192.168.1.100', location: '中国北京', lat: 39.9042, lng: 116.4074, count: 15, type: '端口扫描' },
+                { ip: '10.0.0.1', location: '美国纽约', lat: 40.7128, lng: -74.0060, count: 8, type: '暴力破解' },
+                { ip: '172.16.0.1', location: '俄罗斯莫斯科', lat: 55.7558, lng: 37.6173, count: 12, type: 'SQL注入' },
+                { ip: '192.168.0.1', location: '日本东京', lat: 35.6762, lng: 139.6503, count: 5, type: 'XSS攻击' },
+                { ip: '10.1.1.1', location: '英国伦敦', lat: 51.5074, lng: -0.1278, count: 7, type: 'DDoS攻击' },
+                { ip: '172.17.0.1', location: '德国柏林', lat: 52.5200, lng: 13.4050, count: 4, type: '端口扫描' },
+                { ip: '192.168.2.1', location: '澳大利亚悉尼', lat: -33.8688, lng: 151.2093, count: 3, type: '暴力破解' },
+                { ip: '10.2.2.2', location: '巴西圣保罗', lat: -23.5505, lng: -46.6333, count: 6, type: 'SQL注入' }
+            ];
+            
+            // 生成CSV内容
+            let csvContent = 'IP地址,位置,纬度,经度,攻击次数,攻击类型\n';
+            attackers.forEach(attacker => {
+                csvContent += `${attacker.ip},${attacker.location},${attacker.lat},${attacker.lng},${attacker.count},${attacker.type}\n`;
+            });
+            
+            // 创建下载链接
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `attackers_${new Date().toISOString().slice(0, 19).replace(/[-:]/g, '')}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showToast('攻击者列表已导出为CSV文件', 'success');
+        }
+    </script>
 </body>
 </html>
