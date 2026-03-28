@@ -1,11 +1,14 @@
 <img src="ui/favicon.png" alt="MirageShield Icon" width="120">
-# 幻影屏障 MirageShield
+
+# MirageShield
+
+---
 
 > AI Agent-driven Active Network Defense System | One-click Deployable Open Source Security Tool
 
-MirageShield (Phantom Barrier), referred to as 幻影盾 (Phantom Shield)
+MirageShield (Phantom Barrier), referred to as Phantom Shield
 
-[English](README.en.md) | [中文](README.md)
+[中文](README.md) | [English](README.en.md)
 
 **Quick Experience**:
 - [Download Latest Version](https://github.com/ylqxb/MirageShield/releases/latest)

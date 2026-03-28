@@ -1,5 +1,8 @@
 <img src="ui/favicon.png" alt="MirageShield Icon" width="120">
+
 # 幻影屏障 MirageShield
+
+---
 
 > AI 多智能体驱动的主动网络防御系统 | 一键部署的开源安全工具
 
