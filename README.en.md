@@ -172,37 +172,17 @@ MirageShield is an AI agent-based active defense system with a layered architect
 
 #### System Core Architecture and Agent Collaboration
 
-**Three-layer Collaborative Defense Architecture**:
+**Three-layer AI Agent Collaborative Network Security Active Defense System Based on Psychological Domain**:
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Perception Layer                          │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
-│  │   Prober     │  │   Watcher    │  │    Baiter    │       │
-│  │  Network     │  │  Threat      │  │  Bait        │       │
-│  │  Detection   │  │  Monitoring  │  │  Deployment  │       │
-│  └──────────────┘  └──────────────┘  └──────────────┘       │
-└─────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Decision Layer                            │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │              AI Threat Analysis Engine               │   │
-│  │  • Pattern Recognition  • Confidence Calculation    │   │
-│  │  • Defense Strategy Generation                      │   │
-│  └─────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Execution Layer                           │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
-│  │   Honeypot   │  │   Access     │  │   Threat     │       │
-│  │   System     │  │   Control    │  │   Sharing    │       │
-│  └──────────────┘  └──────────────┘  └──────────────┘       │
-└─────────────────────────────────────────────────────────────┘
-```
+![System Architecture](images/system_architecture.jpg)
+
+**Architecture Description**:
+- **First Agent (Pathfinder)**: Responsible for network detection and analysis, data collection and secure transmission
+- **Second Agent (Baiter)**: Responsible for bait deployment and management, generating high-fidelity fake data and honeypots
+- **Third Agent (Watcher)**: Responsible for network monitoring and threat analysis, advanced anomaly detection and attacker analysis
+- **Collaborative Control Module**: Acts as central decision-maker, coordinates agent actions
+- **Community Defense Module**: Implements threat intelligence sharing, supports anonymous sharing mechanism
+- **Dynamic Network Topology Management Module**: Manages network topology, implements IP rotation and network restructuring migration
 
 **Agent Collaboration Workflow**:
 
