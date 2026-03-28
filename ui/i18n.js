@@ -141,6 +141,8 @@ const i18n = {
         'button.back_to_main': '返回主页面',
         'button.refresh_logs': '刷新日志',
         'button.view_logs': '查看系统日志',
+        'button.start_full_protection': '一键启动防御',
+        'system.lightweight': '本程序轻量运行，CPU<5%，内存<60MB',
         'log.level.all': '所有级别',
         'log.level.error': '错误',
         'log.level.warning': '警告',
@@ -347,7 +349,7 @@ const i18n = {
         'monitoring.close': '关闭',
         
         // 页脚
-        'footer.copyright': '© 2026 MirageShield 团队 版权所有，侵权必究 - 版本 v0.2.2',
+        'footer.copyright': '© 2026 ylqxb 版权所有 - 版本 v0.2.2',
         
         // 语言切换
         'language.zh': '中文',
@@ -389,6 +391,13 @@ const i18n = {
         'password.change.success': '密码修改成功',
         'password.change.failure': '密码修改失败',
         'password.change.mismatch': '新密码和确认密码不一致',
+        
+        // 错误信息
+        'error.chart_load_failed': '图表库加载失败，部分功能不可用',
+        
+        // 登录指引
+        'login.welcome': '欢迎使用 MirageShield！',
+        'login.guide_text': '请先登录，解锁完整的系统防御功能',
         
         // 退出相关
         'logout.button': '退出',
@@ -536,6 +545,8 @@ const i18n = {
         'button.back_to_main': 'Back to Main Page',
         'button.refresh_logs': 'Refresh Logs',
         'button.view_logs': 'View System Logs',
+        'button.start_full_protection': 'One-click Start Defense',
+        'system.lightweight': 'This program runs lightweight, CPU<5%, memory<60MB',
         'log.level.all': 'All Levels',
         'log.level.error': 'Error',
         'log.level.warning': 'Warning',
@@ -741,7 +752,7 @@ const i18n = {
         'monitoring.close': 'Close',
         
         // 页脚
-        'footer.copyright': '© 2026 MirageShield Team. All rights reserved. - Version 0.2.1',
+        'footer.copyright': '© 2026 ylqxb. All rights reserved. - Version v0.2.2',
         
         // 语言切换
         'language.zh': '中文',
@@ -783,6 +794,13 @@ const i18n = {
         'password.change.success': 'Password changed successfully',
         'password.change.failure': 'Password change failed',
         'password.change.mismatch': 'New password and confirm password do not match',
+        
+        // 错误信息
+        'error.chart_load_failed': 'Chart library failed to load, some functions are unavailable',
+        
+        // 登录指引
+        'login.welcome': 'Welcome to MirageShield!',
+        'login.guide_text': 'Please log in first to unlock the complete system defense functions',
         
         // 退出相关
         'logout.button': 'Logout',
@@ -1064,6 +1082,49 @@ function updateUI() {
         systemResourcesTitle.textContent = t('monitoring.system_resources');
     }
     
+    // 更新系统资源模态框加载状态
+    const systemResourcesLoading = document.querySelector('#system-resources-loading span');
+    if (systemResourcesLoading) {
+        systemResourcesLoading.textContent = t('error.loading');
+    }
+    
+    // 更新系统资源图表文本
+    if (typeof window.systemResourcesChart !== 'undefined' && window.systemResourcesChart) {
+        // 更新图表标题
+        window.systemResourcesChart.options.plugins.title.text = t('monitoring.system_resources');
+        // 更新数据集标签
+        window.systemResourcesChart.data.datasets[0].label = t('monitoring.cpu_usage') + ' (%)';
+        window.systemResourcesChart.data.datasets[1].label = t('monitoring.memory_usage') + ' (%)';
+        window.systemResourcesChart.data.datasets[2].label = t('monitoring.disk_usage') + ' (%)';
+        // 更新图表
+        window.systemResourcesChart.update();
+    }
+    
+    // 更新登录指引文本
+    const loginWelcomeText = document.getElementById('login-welcome-text');
+    if (loginWelcomeText) {
+        loginWelcomeText.textContent = t('login.welcome');
+    }
+    const loginGuideText = document.getElementById('login-guide-text');
+    if (loginGuideText) {
+        loginGuideText.textContent = t('login.guide_text');
+    }
+    const loginGuideBtn = document.querySelector('.login-guide-btn');
+    if (loginGuideBtn) {
+        loginGuideBtn.textContent = t('login.button');
+    }
+    
+    // 更新一键启动防御按钮
+    const startFullProtectionText = document.getElementById('start-full-protection-text');
+    if (startFullProtectionText) {
+        startFullProtectionText.textContent = t('button.start_full_protection');
+    }
+    
+    // 更新轻量运行提示
+    const lightweightText = document.getElementById('lightweight-text');
+    if (lightweightText) {
+        lightweightText.textContent = t('system.lightweight');
+    }
 
     
     // 更新登录按钮

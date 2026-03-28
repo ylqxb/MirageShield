@@ -1,3 +1,4 @@
+![MirageShield Icon](ui/favicon.png)
 # 幻影屏障 MirageShield
 
 > AI Agent-driven Active Network Defense System | One-click Deployable Open Source Security Tool
@@ -24,6 +25,10 @@ MirageShield is an AI agent-based active defense system with a layered architect
 - 🚀 Deployment Threshold: Docker one-line command quick startup | Windows one-click deployment simple and convenient | Zero configuration out of the box
 
 > *The above data are actual test environment results. Actual usage effects may vary depending on operating environment and attack types*
+
+## Language Switching
+- **System Interface**: Supports Chinese and English switching, click the language button in the upper right corner of the page to switch
+- **Demo Page**: The current Demo page is a static version and does not support language switching functionality
 
 ## Core Advantages
 

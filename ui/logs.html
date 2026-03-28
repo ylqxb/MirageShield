@@ -4,6 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>系统日志 - MirageShield</title>
+        <link rel="icon" href="favicon.png" type="image/png">
         <meta name="description" content="系统日志 - MirageShield 幻影盾主动防御系统">
         <link rel="preconnect" href="https://cdnjs.cloudflare.com">
         <link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -112,6 +113,24 @@
             }
         }
         
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 20px;
+        }
+
+        .header-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(100, 255, 218, 0.5);
+        }
+
+        .header-text {
+            text-align: left;
+        }
+
         header h1, header p {
             position: relative;
             z-index: 1;
@@ -439,6 +458,26 @@
             transform: translateY(-5px);
             box-shadow: 0 6px 20px rgba(100, 255, 218, 0.6);
         }
+        
+        /* 语言切换按钮样式 */
+        .language-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: rgba(100, 255, 218, 0.2);
+            color: #64ffda;
+            border: 1px solid rgba(100, 255, 218, 0.3);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .language-button:hover {
+            background: rgba(100, 255, 218, 0.3);
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+        }
         </style>
     <script src="i18n.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
@@ -448,8 +487,13 @@
     
     <div class="container">
         <header>
-            <h1 id="page-title">系统日志 - MirageShield</h1>
-            <p id="page-subtitle">实时系统日志查看与管理</p>
+            <div class="header-content">
+                <img src="favicon.png" alt="MirageShield Icon" class="header-icon">
+                <div class="header-text">
+                    <h1 id="page-title">系统日志 - MirageShield</h1>
+                    <p id="page-subtitle">实时系统日志查看与管理</p>
+                </div>
+            </div>
         </header>
         
         <div class="controls">
@@ -518,6 +562,31 @@
         // 检查是否在 GitHub Pages 上运行
         const isGitHubPages = window.location.hostname === 'ylqxb.github.io';
         
+        // 初始化语言
+        function initLanguage() {
+            // 初始化语言设置
+            setLanguage(getCurrentLanguage());
+            
+            // 添加语言切换按钮
+            if (!document.getElementById('languageButton')) {
+                const languageButton = document.createElement('button');
+                languageButton.id = 'languageButton';
+                languageButton.className = 'language-button';
+                languageButton.innerHTML = getCurrentLanguage() === 'zh-CN' ? t('language.zh') : t('language.en');
+                languageButton.onclick = function() {
+                    const newLang = getCurrentLanguage() === 'zh-CN' ? 'en-US' : 'zh-CN';
+                    setLanguage(newLang);
+                    languageButton.innerHTML = newLang === 'zh-CN' ? t('language.zh') : t('language.en');
+                };
+                
+                // 添加到页面
+                const header = document.querySelector('header');
+                if (header) {
+                    header.appendChild(languageButton);
+                }
+            }
+        }
+
         // 页面加载时获取状态
         window.onload = function() {
             // 初始化语言
