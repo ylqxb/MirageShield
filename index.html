@@ -4,6 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>MirageShield 幻影盾主动防御系统</title>
+        <link rel="icon" href="/ui/favicon.png" type="image/png">
         <meta name="description" content="MirageShield 幻影盾主动防御系统 - 实时监控与管理平台">
         <link rel="preconnect" href="https://cdnjs.cloudflare.com">
         <link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -21,6 +22,27 @@
             line-height: 1.6;
             position: relative;
             overflow-x: hidden;
+        }
+        
+        /* 语言切换按钮样式 */
+        .language-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: rgba(100, 255, 218, 0.2);
+            border: 1px solid rgba(100, 255, 218, 0.4);
+            border-radius: 8px;
+            color: #64ffda;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .language-button:hover {
+            background: rgba(100, 255, 218, 0.3);
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
         }
         
         /* 快速导航栏 - 轻便简约设计 */
@@ -145,9 +167,14 @@
             backdrop-filter: blur(10px);
         }
         
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
         .modal-content {
             background-color: rgba(10, 25, 47, 0.95);
-            margin: 5% auto;
             padding: 30px;
             border: 1px solid rgba(100, 255, 218, 0.3);
             border-radius: 16px;
@@ -408,6 +435,24 @@
         header h1, header p {
             position: relative;
             z-index: 1;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 15px;
+        }
+        
+        .header-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-left: -10px;
+        }
+        
+        .header-text {
+            text-align: left;
         }
         
         header h1 {
@@ -905,6 +950,109 @@
             }
         }
         
+        /* 登录指引样式 */
+        .login-guide {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 25, 47, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 3000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .login-guide-content {
+            background: linear-gradient(135deg, #0a192f, #172a45);
+            border: 1px solid rgba(100, 255, 218, 0.5);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(100, 255, 218, 0.3), 0 0 40px rgba(100, 255, 218, 0.15);
+            position: relative;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .login-guide-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            animation: bounce 1s infinite alternate;
+        }
+        
+        .login-guide-text h3 {
+            color: #64ffda;
+            margin-bottom: 10px;
+            font-size: 24px;
+            text-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+        }
+        
+        .login-guide-text p {
+            color: #a8b2d1;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .login-guide-btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #64ffda, #007bff);
+            color: #0a192f;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(100, 255, 218, 0.4);
+        }
+        
+        .login-guide-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(100, 255, 218, 0.6);
+            background: linear-gradient(135deg, #007bff, #64ffda);
+        }
+        
+        .login-guide-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            color: #a8b2d1;
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .login-guide-close:hover {
+            color: #64ffda;
+        }
+        
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-10px);
+            }
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
         /* 登录模态框 */
         .modal {
             display: none;
@@ -1215,10 +1363,93 @@
         </style>
     <script src="/ui/i18n.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>if (typeof Chart === 'undefined') { document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"><\/script>'); }</script>
+    <!-- Chart.js 加载 -->
+    <script>
+        // 加载Chart.js的函数
+        function loadChartJS(url) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+        
+        // 尝试加载Chart.js
+        async function initChartJS() {
+            try {
+                await loadChartJS('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js');
+                console.log('Chart.js loaded successfully from cdnjs');
+                // 确保Chart对象存在后再初始化图表
+                if (typeof Chart !== 'undefined') {
+                    initSystemResourcesChart();
+                } else {
+                    // 等待一小段时间后再次检查
+                    setTimeout(() => {
+                        if (typeof Chart !== 'undefined') {
+                            initSystemResourcesChart();
+                        } else {
+                            console.error('Chart object is not available after CDN load');
+                            showToast(t('error.chart_load_failed'), 'error');
+                        }
+                    }, 100);
+                }
+            } catch (error) {
+                console.error('Chart.js failed to load from cdnjs');
+                try {
+                    await loadChartJS('https://cdn.jsdelivr.net/npm/chart.js@4.4.0');
+                    console.log('Chart.js loaded successfully from backup CDN');
+                    // 确保Chart对象存在后再初始化图表
+                    if (typeof Chart !== 'undefined') {
+                        initSystemResourcesChart();
+                    } else {
+                        // 等待一小段时间后再次检查
+                        setTimeout(() => {
+                            if (typeof Chart !== 'undefined') {
+                                initSystemResourcesChart();
+                            } else {
+                                console.error('Chart object is not available after backup CDN load');
+                                showToast(t('error.chart_load_failed'), 'error');
+                            }
+                        }, 100);
+                    }
+                } catch (error) {
+                    console.error('Chart.js failed to load from all CDNs');
+                    showToast(t('error.chart_load_failed'), 'error');
+                    return; // 加载失败时直接返回
+                }
+            }
+        }
+        
+        // 初始化Chart.js
+        initChartJS();
+        
+        // 添加模态框外部点击关闭功能的公共函数
+        function addModalCloseHandler(modalId, closeFunction) {
+            const modal = document.getElementById(modalId);
+            modal.onclick = function(event) {
+                if (event.target === modal) {
+                    closeFunction();
+                }
+            };
+        }
+    </script>
 </head>
 <body>
+    <!-- 登录指引 -->
+    <div id="login-guide" class="login-guide" style="display: none;">
+        <div class="login-guide-content">
+            <div class="login-guide-icon">🔐</div>
+            <div class="login-guide-text">
+                <h3 id="login-welcome-text">欢迎使用 MirageShield！</h3>
+                <p id="login-guide-text">请先登录，解锁完整的系统防御功能</p>
+                <button class="btn btn-primary login-guide-btn" onclick="openLoginModal()">立即登录</button>
+            </div>
+            <button class="login-guide-close" onclick="closeLoginGuide()">&times;</button>
+        </div>
+    </div>
+    
     <!-- 登录按钮 -->
     <button id="loginBtn" class="login-btn" onclick="openLoginModal()">登录</button>
     
@@ -1359,8 +1590,13 @@
     <div class="container">
         <header>
             <div class="vibrant-accent"></div>
-            <h1 class="title-decoration">MirageShield 幻影盾主动防御系统</h1>
-            <p>实时监控与管理平台</p>
+            <div class="header-content">
+                <img src="/ui/favicon.png" alt="MirageShield Icon" class="header-icon">
+                <div class="header-text">
+                    <h1 class="title-decoration">MirageShield 幻影盾主动防御系统</h1>
+                    <p>实时监控与管理平台</p>
+                </div>
+            </div>
         </header>
         
         <div class="status-section" id="system-status-section">
@@ -1421,7 +1657,7 @@
             <h2 class="section-title">操作控制</h2>
             <div style="margin-bottom: 20px;">
                 <button class="btn btn-success btn-lg" style="width: 100%; padding: 15px; font-size: 18px; font-weight: bold; background: linear-gradient(135deg, #4CAF50, #45a049); border: none; box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);" onclick="startFullProtection()">
-                    🛡️ 一键启动防御
+                    🛡️ <span id="start-full-protection-text">一键启动防御</span>
                 </button>
             </div>
             <div class="protection-level-selector">
@@ -1507,7 +1743,7 @@
         </div>
         
         <div class="footer">
-            <p>© 2026 MirageShield 团队 版权所有，侵权必究 - 版本 v0.2.2</p>
+            <p>© 2026 ylqxb 版权所有 - 版本 v0.2.2</p>
         </div>
     </div>
     
@@ -1692,12 +1928,14 @@
         // 切换系统资源模态框
         function toggleSystemResourcesModal() {
             const modal = document.getElementById('systemResourcesModal');
-            if (modal.style.display === 'block') {
-                modal.style.display = 'none';
+            if (modal.classList.contains('show')) {
+                modal.classList.remove('show');
                 document.body.style.overflow = '';
             } else {
-                modal.style.display = 'block';
+                // 立即显示模态框
+                modal.classList.add('show');
                 document.body.style.overflow = 'hidden';
+                
                 // 确保图表已初始化
                 if (typeof initSystemResourcesChart === 'function') {
                     try {
@@ -1706,15 +1944,54 @@
                         console.error('初始化图表失败:', e);
                     }
                 }
-                // 确保图表有数据
+                
+                // 立即显示加载状态
+                const loadingElement = document.getElementById('system-resources-loading');
+                const chartElement = document.getElementById('system-resources-chart');
+                if (loadingElement) loadingElement.style.display = 'flex';
+                if (chartElement) chartElement.style.display = 'none';
+                
+                // 异步获取监控数据，不阻塞UI
                 if (typeof getMonitoringData === 'function') {
                     try {
                         getMonitoringData();
                     } catch (e) {
                         console.error('获取监控数据失败:', e);
+                        if (loadingElement) loadingElement.innerHTML = '<div class="status-card danger"><div class="card-title">加载失败</div><div class="card-content">获取监控数据失败: ' + e.message + '</div></div>';
                     }
+                } else {
+                    // 如果getMonitoringData函数不存在，创建一个
+                    getMonitoringData();
                 }
             }
+        }
+        
+        // 获取系统监控数据
+        function getMonitoringData() {
+            // 立即显示加载状态
+            const loadingElement = document.getElementById('system-resources-loading');
+            if (loadingElement) {
+                loadingElement.style.display = 'flex';
+                loadingElement.innerHTML = '<div class="loading-spinner"></div><span style="margin-left: 10px; color: #64ffda;">加载中...</span>';
+            }
+            
+            authenticatedFetch(`${API_BASE}/api/monitoring/system`)
+                .then(response => response.json())
+                .then(data => {
+                    // 确保数据格式正确
+                    if (!data || !data.cpu || !data.memory || !data.disk) {
+                        throw new Error('数据格式错误');
+                    }
+                    // 更新系统资源图表
+                    updateSystemResourcesChart(data);
+                })
+                .catch(error => {
+                    console.error('获取监控数据失败:', error);
+                    // 显示错误信息
+                    if (loadingElement) {
+                        loadingElement.innerHTML = `<div class="status-card danger"><div class="card-title">加载失败</div><div class="card-content">获取监控数据失败: ${error.message}</div></div>`;
+                    }
+                });
         }
         
         // 监听键盘事件
@@ -1726,7 +2003,7 @@
             // 当按下Escape键时关闭模态框
             if (e.key === 'Escape') {
                 const modal = document.getElementById('systemResourcesModal');
-                if (modal.style.display === 'block') {
+                if (modal.classList.contains('show')) {
                     toggleSystemResourcesModal();
                 }
             }
@@ -1751,6 +2028,47 @@
         // 检查是否为演示模式
         const isDemoMode = window.isDemoMode || isGitHubPages;
         
+        // 关闭登录指引
+        function closeLoginGuide() {
+            const loginGuide = document.getElementById('login-guide');
+            if (loginGuide) {
+                loginGuide.style.display = 'none';
+            }
+        }
+        
+        // 显示登录指引
+        function showLoginGuide() {
+            const loginGuide = document.getElementById('login-guide');
+            if (loginGuide) {
+                loginGuide.style.display = 'flex';
+            }
+        }
+        
+        // 初始化语言
+        function initLanguage() {
+            // 初始化语言设置
+            setLanguage(getCurrentLanguage());
+            
+            // 添加语言切换按钮
+            if (!document.getElementById('languageButton')) {
+                const languageButton = document.createElement('button');
+                languageButton.id = 'languageButton';
+                languageButton.className = 'language-button';
+                languageButton.innerHTML = getCurrentLanguage() === 'zh-CN' ? t('language.zh') : t('language.en');
+                languageButton.onclick = function() {
+                    const newLang = getCurrentLanguage() === 'zh-CN' ? 'en-US' : 'zh-CN';
+                    setLanguage(newLang);
+                    languageButton.innerHTML = newLang === 'zh-CN' ? t('language.zh') : t('language.en');
+                };
+                
+                // 添加到页面
+                const header = document.querySelector('header');
+                if (header) {
+                    header.appendChild(languageButton);
+                }
+            }
+        }
+        
         // 页面加载时获取状态
         window.onload = function() {
             // 初始化语言
@@ -1761,8 +2079,11 @@
             initNavPosition();
             // 显式设置标题
             setSectionTitles();
-            // 如果已登录，刷新状态
-            if (token) {
+            // 如果未登录且不是 GitHub Pages，则显示登录指引
+            if (!token && !isGitHubPages) {
+                showLoginGuide();
+            } else if (token) {
+                // 如果已登录，刷新状态
                 // 延迟1秒再刷新状态，让页面先渲染完成
                 setTimeout(() => {
                     if (isGitHubPages) {
@@ -1982,15 +2303,15 @@
             const monitoringContentDiv = document.getElementById('monitoring-content');
             monitoringContentDiv.innerHTML = `
                 <div class="status-card">
-                    <div class="card-title">CPU使用率</div>
+                    <div class="card-title">${t('monitoring.cpu_usage')}</div>
                     <div class="card-content">35%</div>
                 </div>
                 <div class="status-card">
-                    <div class="card-title">内存使用率</div>
+                    <div class="card-title">${t('monitoring.memory_usage')}</div>
                     <div class="card-content">60%</div>
                 </div>
                 <div class="status-card">
-                    <div class="card-title">磁盘使用率</div>
+                    <div class="card-title">${t('monitoring.disk_usage')}</div>
                     <div class="card-content">45%</div>
                 </div>
             `;
@@ -2095,6 +2416,7 @@
         
         // 打开登录模态框
         function openLoginModal() {
+            closeLoginGuide(); // 关闭登录指引
             document.getElementById('loginModal').style.display = 'flex';
         }
         
@@ -2150,6 +2472,7 @@
                     // 更新UI
                     checkAuthStatus();
                     closeLoginModal();
+                    closeLoginGuide(); // 关闭登录指引
                     showToast('登录成功', 'success');
                     
                     // 检查是否需要强制修改密码
@@ -2264,7 +2587,7 @@
             // 演示模式下返回模拟数据
             if (isDemoMode) {
                 return new Promise((resolve) => {
-                    // 模拟网络延迟
+                    // 减少模拟网络延迟，提高模态框加载速度
                     setTimeout(() => {
                         // 根据URL返回不同的模拟数据
                         if (url.includes('/api/system/status')) {
@@ -2273,7 +2596,48 @@
                                     system_status: '正常运行',
                                     timestamp: new Date().toISOString(),
                                     protection_level: 'high',
-                                    threat_level: 'low'
+                                    threat_level: 'low',
+                                    current_strategy: {
+                                        bait_ratio: 0.5,
+                                        path_complexity: 3,
+                                        psychological_warfare_level: 2,
+                                        dynamic_adjustment: false
+                                    }
+                                })
+                            });
+                        } else if (url.includes('/api/monitoring/system')) {
+                            resolve({
+                                json: () => Promise.resolve({
+                                    cpu: {
+                                        average: Math.random() * 30 + 50,
+                                        cores: [
+                                            { usage: Math.random() * 30 + 50 },
+                                            { usage: Math.random() * 30 + 50 },
+                                            { usage: Math.random() * 30 + 50 },
+                                            { usage: Math.random() * 30 + 50 }
+                                        ]
+                                    },
+                                    memory: {
+                                        used: 1234567890,
+                                        available: 4567890123,
+                                        percent: Math.random() * 20 + 60
+                                    },
+                                    disk: {
+                                        used: 245678901234,
+                                        free: 26789012345,
+                                        percent: Math.random() * 10 + 80
+                                    },
+                                    network: {
+                                        bytes_sent: 400500234,
+                                        bytes_recv: 1234567890
+                                    },
+                                    processes: {
+                                        total: 123,
+                                        top: [
+                                            { name: 'chrome.exe', cpu: 12.5, memory: 1500 },
+                                            { name: 'node.exe', cpu: 8.2, memory: 800 }
+                                        ]
+                                    }
                                 })
                             });
                         } else if (url.includes('/api/agents')) {
@@ -2330,7 +2694,8 @@
                                         threat_type: 'port_scan',
                                         threat_level: 'high',
                                         confidence: 85.0,
-                                        action: 'blocked'
+                                        action: 'blocked',
+                                        source_ip: '192.168.1.100'
                                     }
                                 ])
                             });
@@ -2357,23 +2722,6 @@
                                     transfers: []
                                 })
                             });
-                        } else if (url.includes('/api/monitoring/system')) {
-                            resolve({
-                                json: () => Promise.resolve({
-                                    cpu: {
-                                        usage: 30.5,
-                                        cores: 4
-                                    },
-                                    memory: {
-                                        usage: 45.2,
-                                        total: 8192
-                                    },
-                                    disk: {
-                                        usage: 60.8,
-                                        total: 500
-                                    }
-                                })
-                            });
                         } else {
                             // 默认返回成功响应
                             resolve({
@@ -2382,7 +2730,7 @@
                                 })
                             });
                         }
-                    }, 300); // 300ms 模拟延迟
+                    }, 50); // 减少到50ms 模拟延迟，提高加载速度
                 });
             }
             
@@ -2741,8 +3089,12 @@
                 const errorMessage = blacklist.error || threats.error || '未知错误';
                 const modalContent = document.getElementById('communityDetailsModalContent');
                 modalContent.innerHTML = `<div class="status-card danger"><div class="card-title">${t('error.loading')}</div><div class="card-content">${t('error.failed_to_get_community_status')}: ${errorMessage}</div></div>`;
-                document.getElementById('communityDetailsModal').style.display = 'flex';
+                const modal = document.getElementById('communityDetailsModal');
+                modal.classList.add('show');
                 document.body.style.overflow = 'hidden';
+                
+                // 添加点击模态框外部关闭功能
+                addModalCloseHandler('communityDetailsModal', closeCommunityDetailsModal);
                 return;
             }
             
@@ -2808,10 +3160,13 @@
                     
                     // 显示模态框并设置样式
                     const modal = document.getElementById('communityDetailsModal');
-                    modal.style.display = 'flex';
+                    modal.classList.add('show');
                     
                     // 禁止背景页面滚动
                     document.body.style.overflow = 'hidden';
+                    
+                    // 添加点击模态框外部关闭功能
+                    addModalCloseHandler('communityDetailsModal', closeCommunityDetailsModal);
                 })
                 .catch(error => {
                     // 如果获取同步状态失败，仍然显示基本信息
@@ -2864,10 +3219,13 @@
                     
                     // 显示模态框并设置样式
                     const modal = document.getElementById('communityDetailsModal');
-                    modal.style.display = 'flex';
+                    modal.classList.add('show');
                     
                     // 禁止背景页面滚动
                     document.body.style.overflow = 'hidden';
+                    
+                    // 添加点击模态框外部关闭功能
+                    addModalCloseHandler('communityDetailsModal', closeCommunityDetailsModal);
                 })
                 .catch(error => {
                     console.error('获取系统状态失败:', error);
@@ -2886,17 +3244,20 @@
                     
                     // 显示模态框并设置样式
                     const modal = document.getElementById('communityDetailsModal');
-                    modal.style.display = 'flex';
+                    modal.classList.add('show');
                     
                     // 禁止背景页面滚动
                     document.body.style.overflow = 'hidden';
+                    
+                    // 添加点击模态框外部关闭功能
+                    addModalCloseHandler('communityDetailsModal', closeCommunityDetailsModal);
                 });
         }
         
         // 关闭社区联防详情模态框
         function closeCommunityDetailsModal() {
             const modal = document.getElementById('communityDetailsModal');
-            modal.style.display = 'none';
+            modal.classList.remove('show');
             
             // 恢复背景页面滚动
             document.body.style.overflow = '';
@@ -3523,7 +3884,7 @@
         }
         
         // 图表对象
-        let systemResourcesChart = null;
+        window.systemResourcesChart = null;
         
         // 初始化系统资源图表
         function initSystemResourcesChart() {
@@ -3534,14 +3895,19 @@
             
             const ctx = document.getElementById('system-resources-chart').getContext('2d');
             
+            // 销毁已存在的图表实例
+            if (window.systemResourcesChart) {
+                window.systemResourcesChart.destroy();
+            }
+            
             try {
-                systemResourcesChart = new Chart(ctx, {
+                window.systemResourcesChart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: [],
                         datasets: [
                             {
-                                label: 'CPU 使用率 (%)',
+                                label: t('monitoring.cpu_usage') + ' (%)',
                                 data: [],
                                 borderColor: 'rgba(100, 255, 218, 1)',
                                 backgroundColor: 'rgba(100, 255, 218, 0.2)',
@@ -3550,7 +3916,7 @@
                                 fill: true
                             },
                             {
-                                label: '内存使用率 (%)',
+                                label: t('monitoring.memory_usage') + ' (%)',
                                 data: [],
                                 borderColor: 'rgba(0, 123, 255, 1)',
                                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
@@ -3559,7 +3925,7 @@
                                 fill: true
                             },
                             {
-                                label: '磁盘使用率 (%)',
+                                label: t('monitoring.disk_usage') + ' (%)',
                                 data: [],
                                 borderColor: 'rgba(255, 159, 64, 1)',
                                 backgroundColor: 'rgba(255, 159, 64, 0.2)',
@@ -3581,7 +3947,7 @@
                             },
                             title: {
                                 display: true,
-                                text: '系统资源使用情况',
+                                text: t('monitoring.system_resources'),
                                 color: '#64ffda',
                                 font: {
                                     size: 16
@@ -3622,9 +3988,9 @@
                 return;
             }
             
-            if (!systemResourcesChart) {
+            if (!window.systemResourcesChart) {
                 initSystemResourcesChart();
-                if (!systemResourcesChart) {
+                if (!window.systemResourcesChart) {
                     console.warn('Chart initialization failed. Skipping chart update.');
                     return;
                 }
@@ -3642,21 +4008,21 @@
                                 now.getSeconds().toString().padStart(2, '0');
                 
                 // 添加新数据点
-                systemResourcesChart.data.labels.push(timeLabel);
-                systemResourcesChart.data.datasets[0].data.push(data.cpu.average);
-                systemResourcesChart.data.datasets[1].data.push(data.memory.percent);
-                systemResourcesChart.data.datasets[2].data.push(data.disk.percent);
+                window.systemResourcesChart.data.labels.push(timeLabel);
+                window.systemResourcesChart.data.datasets[0].data.push(data.cpu.average);
+                window.systemResourcesChart.data.datasets[1].data.push(data.memory.percent);
+                window.systemResourcesChart.data.datasets[2].data.push(data.disk.percent);
                 
                 // 保持最多显示10个数据点
-                if (systemResourcesChart.data.labels.length > 10) {
-                    systemResourcesChart.data.labels.shift();
-                    systemResourcesChart.data.datasets.forEach(dataset => {
+                if (window.systemResourcesChart.data.labels.length > 10) {
+                    window.systemResourcesChart.data.labels.shift();
+                    window.systemResourcesChart.data.datasets.forEach(dataset => {
                         dataset.data.shift();
                     });
                 }
                 
                 // 更新图表
-                systemResourcesChart.update();
+                window.systemResourcesChart.update();
             } catch (error) {
                 console.error('Failed to update chart:', error);
             }
@@ -4131,7 +4497,7 @@
     </script>
     <!-- 系统资源占用标注 -->
     <div style="position: fixed; bottom: 10px; left: 10px; background: rgba(10, 25, 47, 0.8); color: #64ffda; padding: 5px 10px; border-radius: 4px; font-size: 12px; backdrop-filter: blur(10px); border: 1px solid rgba(100, 255, 218, 0.3); z-index: 999;">
-        本程序轻量运行，CPU<5%，内存<60MB
+        <span id="lightweight-text">本程序轻量运行，CPU<5%，内存<60MB</span>
     </div>
 </body>
 </html>
